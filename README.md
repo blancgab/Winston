@@ -1,4 +1,8 @@
-Winston
-=======
+Repository Name: Winston
+========================
 
-iRobot project
+Collaborators:
++ Gabriel Blanco gab2135
++ Adam Reis ahr2127
+
+Computational Aspects of Robotics
