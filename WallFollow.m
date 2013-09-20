@@ -13,8 +13,8 @@ function output = WallFollow(serPort)
 % Gabriel Blanco and Adam Reis 2013
 
     % Variables
-    v = 0;               % Forward velocity (m/s)
-    w = v2w(v);          % Angular velocity (rad/s)
+    v = 10;               % Forward velocity (m/s)
+    w = 0;          % Angular velocity (rad/s)
     
     % Start robot moving
     SetFwdVelAngVelCreate(serPort,v,w);
@@ -24,6 +24,9 @@ function output = WallFollow(serPort)
     
     if bumped
         BeepRoomba(serPort);
+        v= 0;
+        w= 0;
+        SetFwdVelAngVelCreate(serPort,v,w)
     end
 
     output = 1;
