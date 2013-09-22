@@ -13,7 +13,6 @@ function runtime = WallFollow(serPort)
 % Gabriel Blanco and Adam Reis 2013
 
     
-
     
     global t maxRuntime p;
     
