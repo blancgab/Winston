@@ -19,22 +19,30 @@ function output = WallFollow(serPort)
         bumped = bumpCheck(serPort);
         
         if bumped
-            SetFwdVelAngVelCreate(serPort,-0.1,w);
+            
+            v = -0.1;
+            w = 0;
+            SetFwdVelAngVelCreate(serPort,v,w);
             BeepRoomba(serPort);
             pause(0.1);
             
-            SetFwdVelAngVelCreate(serPort,0,pi);
+            v = 0;
+            w = pi;
+            SetFwdVelAngVelCreate(serPort,v,w);
             pause(1);
+            
             v= 0.3;
             w = 0;
             SetFwdVelAngVelCreate(serPort,v,w);
             pause(1)
             SetFwdVelAngVelCreate(serPort,0,0);
             break;
+            
         end
         
         % Start robot moving
         SetFwdVelAngVelCreate(serPort,v,w);
+        
     end
 
     output = 1;
