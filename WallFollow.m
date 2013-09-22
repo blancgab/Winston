@@ -30,7 +30,9 @@ function runtime = WallFollow(serPort)
     forwardToMeetWall(serPort);
     
     followObjectClockwise(serPort);
-  
+    
+    BeepRoomba(serPort);
+        
 end
  
 function forwardToMeetWall(serPort)
@@ -50,6 +52,21 @@ end
 
 function followObjectClockwise(serPort)
     global t maxRuntime p;
+    
+    arc(serPort);
+        
+    while toc(t) < maxRuntime
+        bumped = bumpCheck(serPort);
+        
+        if bumped
+            arc(serPort);
+        end
+        pause(p)
+    end
+end
+
+function arc(serPort)
+    % r - radius of the desired arc
 
     % Back up slightly   
     v = -0.1;
@@ -59,41 +76,15 @@ function followObjectClockwise(serPort)
 
     % Turn left 45 degrees
     v = 0;
-    w = pi/2;
+    w = pi/3;
     SetFwdVelAngVelCreate(serPort,v,w);
     pause(1)
     
     % Turn forward to right with radius
     v = 0.2;
-    r = -0.3;
+    r = -0.25;
     SetFwdVelRadiusRoomba(serPort,v,r);
-    
-    while toc(t) < maxRuntime
-        bumped = bumpCheck(serPort);
-        
-        if bumped
-            % Back up slightly   
-            v = -0.1;
-            w = 0;
-            SetFwdVelAngVelCreate(serPort,v,w);
-            pause(0.1);
-            
-            % Turn left <45 degrees
-            v = 0;
-            w = pi/2;
-            SetFwdVelAngVelCreate(serPort,v,w);
-            pause(0.7)
-            
-            % Turn forward to right with radius
-            v = 0.2;
-            r = -0.3;
-            SetFwdVelRadiusRoomba(serPort,v,r);
-        end
-        pause(p)
-    end
-    % output = 1;
 end
-
 
 function bumped = bumpCheck(serPort)
 
