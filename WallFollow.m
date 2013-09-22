@@ -1,4 +1,4 @@
-function output = WallFollow(serPort)
+function runtime = WallFollow(serPort)
 % Autonomous control program for the iRobot Create. When it collides with
 % an object, it will "hug" that objects contour until it returns to its
 % original starting position.
@@ -7,15 +7,21 @@ function output = WallFollow(serPort)
 % serPort - Serial port object, used for communicating over bluetooth
 %
 % Output:
-% output - TBD
+% runtime - Time elapsed since the iRobot Create began to move
 
 % WallFollow.m
 % Gabriel Blanco and Adam Reis 2013
 
+    % Constants
+    maxRuntime = 300;    % Maximum runtime (s)
+
     % Variables
-    v = 0.3;               % Forward velocity (m/s)
+    t = tic;        % Time start
+    v = 0.3;        % Forward velocity (m/s)
     w = 0;          % Angular velocity (rad/s)
-    while 1
+    
+    while toc(t) < maxRuntime
+        
         bumped = bumpCheck(serPort);
         
         if bumped
@@ -45,7 +51,7 @@ function output = WallFollow(serPort)
         
     end
 
-    output = 1;
+    runtime = toc(t);
 end
  
 function bumped = bumpCheck(serPort)
