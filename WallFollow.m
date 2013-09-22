@@ -12,22 +12,31 @@ function runtime = WallFollow(serPort)
 % WallFollow.m
 % Gabriel Blanco and Adam Reis 2013
 
+    
+
+    
+    global t maxRuntime p;
+    
     % Constants
     maxRuntime = 12000;    % Maximum runtime (s)
-
-    % Variables
     t = tic;        % Time start
-    v = 0.5;        % Forward velocity (m/s)
-    w = 0;          % Angular velocity (rad/s)
     p = 0.05;       % Pause time
     
-    forwardToMeetWall();
+    % Variables
+    v = 0.5;        % Forward velocity (m/s)
+    w = 0;          % Angular velocity (rad/s)
     
-    followObjectClockwise();
+    
+    forwardToMeetWall(serPort);
+    
+    followObjectClockwise(serPort);
   
 end
  
-function forwardToMeetWall()
+function forwardToMeetWall(serPort)
+    global t maxRuntime p;
+    v = 0.5;
+    w = 0;
     % Start robot moving
     SetFwdVelAngVelCreate(serPort,v,w);
     while toc(t) < maxRuntime
@@ -39,7 +48,9 @@ function forwardToMeetWall()
     end
 end
 
-function followObjectClockwise()
+function followObjectClockwise(serPort)
+    global t maxRuntime p;
+
     % Back up slightly   
     v = -0.1;
     w = 0;
@@ -48,13 +59,13 @@ function followObjectClockwise()
 
     % Turn left 45 degrees
     v = 0;
-    w = -pi/2;
+    w = pi/2;
     SetFwdVelAngVelCreate(serPort,v,w);
     pause(1)
     
     % Turn forward to right with radius
-    v = 0.3;
-    r = 0.2;
+    v = 0.2;
+    r = -0.3;
     SetFwdVelRadiusRoomba(serPort,v,r);
     
     while toc(t) < maxRuntime
@@ -67,15 +78,15 @@ function followObjectClockwise()
             SetFwdVelAngVelCreate(serPort,v,w);
             pause(0.1);
             
-            % Turn left 45 degrees
+            % Turn left <45 degrees
             v = 0;
-            w = -pi/2;
+            w = pi/2;
             SetFwdVelAngVelCreate(serPort,v,w);
-            pause(1)
+            pause(0.7)
             
             % Turn forward to right with radius
-            v = 0.3;
-            r = 0.2;
+            v = 0.2;
+            r = -0.3;
             SetFwdVelRadiusRoomba(serPort,v,r);
         end
         pause(p)
