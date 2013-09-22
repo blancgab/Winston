@@ -12,35 +12,36 @@ function runtime = WallFollow(serPort)
 % WallFollow.m
 % Gabriel Blanco and Adam Reis 2013
 
-    
 
+    global t maxRuntime p port;
     
-    global t maxRuntime p;
-    
-    % Constants
+    % Global constants
     maxRuntime = 12000;    % Maximum runtime (s)
     t = tic;        % Time start
     p = 0.05;       % Pause time
+    port = serPort;
     
     % Variables
     v = 0.5;        % Forward velocity (m/s)
     w = 0;          % Angular velocity (rad/s)
     
     
-    forwardToMeetWall(serPort);
+    forwardToMeetWall();
     
-    followObjectClockwise(serPort);
-  
+    followObjectClockwise();
+    
+    BeepRoomba(port);
+        
 end
  
-function forwardToMeetWall(serPort)
-    global t maxRuntime p;
+function forwardToMeetWall()
+    global t maxRuntime p port;
     v = 0.5;
     w = 0;
     % Start robot moving
-    SetFwdVelAngVelCreate(serPort,v,w);
+    SetFwdVelAngVelCreate(port,v,w);
     while toc(t) < maxRuntime
-        bumped = bumpCheck(serPort);
+        bumped = bumpCheck();
         if bumped
             return
         end
@@ -48,59 +49,48 @@ function forwardToMeetWall(serPort)
     end
 end
 
-function followObjectClockwise(serPort)
-    global t maxRuntime p;
-
-    % Back up slightly   
-    v = -0.1;
-    w = 0;
-    SetFwdVelAngVelCreate(serPort,v,w);
-    pause(0.1);
-
-    % Turn left 45 degrees
-    v = 0;
-    w = pi/2;
-    SetFwdVelAngVelCreate(serPort,v,w);
-    pause(1)
+function followObjectClockwise()
+    global t maxRuntime p port;
     
-    % Turn forward to right with radius
-    v = 0.2;
-    r = -0.3;
-    SetFwdVelRadiusRoomba(serPort,v,r);
-    
+    arc(-0.3, 36);
+        
     while toc(t) < maxRuntime
-        bumped = bumpCheck(serPort);
+        bumped = bumpCheck();
         
         if bumped
-            % Back up slightly   
-            v = -0.1;
-            w = 0;
-            SetFwdVelAngVelCreate(serPort,v,w);
-            pause(0.1);
-            
-            % Turn left <45 degrees
-            v = 0;
-            w = pi/2;
-            SetFwdVelAngVelCreate(serPort,v,w);
-            pause(0.7)
-            
-            % Turn forward to right with radius
-            v = 0.2;
-            r = -0.3;
-            SetFwdVelRadiusRoomba(serPort,v,r);
+            arc(-0.3, 36);
         end
         pause(p)
     end
-    % output = 1;
 end
 
+function arc(r, d)
+    global t maxRuntime p port;
+        
+    % Back up slightly   
+    v = -0.1;
+    w1 = 0;
+    SetFwdVelAngVelCreate(port,v,w1);
+    pause(0.1);
 
-function bumped = bumpCheck(serPort)
+    % Turn left 60 degrees
+    v = 0;
+    w = (pi/180)*d/.4;
+    SetFwdVelAngVelCreate(port,v,w);
+    pause(0.4)
+    
+    % Turn forward to right with radius
+    v = 0.2;
+    SetFwdVelRadiusRoomba(port,v,r);
+    
+end
 
+function bumped = bumpCheck()
+    global port;
 
     % Check bump sensors (ignore wheel drop sensors)
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = ...
-        BumpsWheelDropsSensorsRoomba(serPort);
+        BumpsWheelDropsSensorsRoomba(port);
     
     bumped = BumpRight || BumpLeft || BumpFront;
     
