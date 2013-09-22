@@ -12,12 +12,8 @@ function runtime = WallFollow(serPort)
 % WallFollow.m
 % Gabriel Blanco and Adam Reis 2013
 
-<<<<<<< HEAD
-    
-=======
 
     global t maxRuntime p port;
->>>>>>> c7a409c050448f3df25e7c670aa5d22da94a1b0a
     
     % Global constants
     maxRuntime = 12000;    % Maximum runtime (s)
@@ -30,12 +26,9 @@ function runtime = WallFollow(serPort)
     w = 0;          % Angular velocity (rad/s)
     
     
-    forwardToMeetWall();
-    
+    forwardToMeetWall();    
     followObjectClockwise();
-    
-    BeepRoomba(port);
-        
+            
 end
  
 function forwardToMeetWall()
@@ -45,8 +38,7 @@ function forwardToMeetWall()
     % Start robot moving
     SetFwdVelAngVelCreate(port,v,w);
     while toc(t) < maxRuntime
-        bumped = bumpCheck();
-        if bumped
+        if bumped()
             return
         end
         pause(p)
@@ -58,11 +50,15 @@ function followObjectClockwise()
     
     arc(-0.3, 36);
         
-    while toc(t) < maxRuntime
-        bumped = bumpCheck();
+    while toc(t) < maxRuntime        
         
-        if bumped
-            arc(-0.3, 36);
+        switch bumped()
+            case 'r'
+                arc(-0.3, 50);
+            case 'l'
+                arc(-0.3, 130);
+            case 'f'
+                arc(-0.3, 36);
         end
         pause(p)
     end
@@ -77,11 +73,12 @@ function arc(r, d)
     SetFwdVelAngVelCreate(port,v,w1);
     pause(0.1);
 
-    % Turn left 60 degrees
+    % Turn left "d" degrees
     v = 0;
-    w = (pi/180)*d/.4;
+    w = 1.57;
+    rotationTime = (pi/180)*d/w;
     SetFwdVelAngVelCreate(port,v,w);
-    pause(0.4)
+    pause(rotationTime)
     
     % Turn forward to right with radius
     v = 0.2;
@@ -89,13 +86,58 @@ function arc(r, d)
     
 end
 
-function bumped = bumpCheck()
+function bump = bumped()
     global port;
 
     % Check bump sensors (ignore wheel drop sensors)
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = ...
         BumpsWheelDropsSensorsRoomba(port);
     
-    bumped = BumpRight || BumpLeft || BumpFront;
+    bump = 0;
+    
+    if BumpRight
+        bump = 'r';
+    end
+    
+    if BumpLeft
+        bump = 'l';
+    end
+    
+    if BumpFront
+        bump = 'f';
+    end
+    
+end
+
+function bump = bumpedRight()
+    global port;
+
+    % Check bump sensors (ignore wheel drop sensors)
+    [BumpRight, ~, ~, ~, ~, ~] = ...
+        BumpsWheelDropsSensorsRoomba(port);
+    
+    bump = BumpRight;
+    
+end
+
+function bump = bumpedLeft()
+    global port;
+
+    % Check bump sensors (ignore wheel drop sensors)
+    [~, BumpLeft, ~, ~, ~, ~] = ...
+        BumpsWheelDropsSensorsRoomba(port);
+    
+    bump = BumpLeft;
+    
+end
+
+function bump = bumpedFront()
+    global port;
+
+    % Check bump sensors (ignore wheel drop sensors)
+    [~, ~, ~, ~, ~, BumpFront] = ...
+        BumpsWheelDropsSensorsRoomba(port);
+    
+    bump = BumpFront;
     
 end
