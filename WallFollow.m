@@ -15,28 +15,34 @@ function output = WallFollow(serPort)
     % Variables
     v = 0.3;               % Forward velocity (m/s)
     w = 0;          % Angular velocity (rad/s)
+    
+    % Start robot moving
+    SetFwdVelAngVelCreate(serPort,v,w);
+
+       
     while 1
-        bumped = bumpCheck(serPort);
-        
+        bumped = bumpCheck(serPort);       
         if bumped
+            fprintf('BUMPY!\n');
+            
             SetFwdVelAngVelCreate(serPort,-0.1,w);
-            BeepRoomba(serPort);
+            
+%             BeepRoomba(serPort);
             pause(0.1);
             
-            SetFwdVelAngVelCreate(serPort,0,pi);
-            pause(1);
+            fprintf('about to turn\n');
+            SetFwdVelAngVelCreate(serPort,0,pi/2);
+            
+            fprintf('turning\n');
+            pause(2);
             v= 0.3;
             w = 0;
             SetFwdVelAngVelCreate(serPort,v,w);
-            pause(1)
-            SetFwdVelAngVelCreate(serPort,0,0);
-            break;
         end
+        pause(.05)
         
-        % Start robot moving
-        SetFwdVelAngVelCreate(serPort,v,w);
     end
-
+    
     output = 1;
 end
  
