@@ -66,8 +66,6 @@ function followObjectClockwise(serPort)
 end
 
 function arc(serPort)
-    % r - radius of the desired arc
-
     % Back up slightly   
     v = -0.1;
     w = 0;
