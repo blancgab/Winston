@@ -28,9 +28,15 @@ function runtime = WallFollow(serPort)
     hits = 0;
     
     followObjectClockwise();
-%     
+    
 %     hits = 1;
 %     radius = -1;
+%     
+%     turn(90);
+%     turn(45);
+%     turn(45);
+%     turn(180);
+%     
 %     arc(radius);
 %     pause(7.8539);
 %     update_position();
@@ -61,33 +67,33 @@ function runtime = WallFollow(serPort)
 end
 
 function followObjectClockwise()
-    global t maxRuntime p radius glob_x glob_y port;
+    global t maxRuntime p radius glob_x glob_y port hits;
     
     % Start robot moving
     v = 0.5;
     w = 0;
     SetFwdVelAngVelCreate(port,v,w);
         
-    while toc(t) < maxRuntime
+    while (toc(t) < maxRuntime)% && (hits<5)
         [front, left, right] = bumpCheck();
        
         if front
             fprintf('both\n');
-            back_up();
+%             back_up();
             update_position();
             turn(120);
             arc(radius);
             continue;
         elseif left
             fprintf('left\n');
-            back_up();
+%             back_up();
             update_position(); 
             turn(170);
             arc(radius);
             continue;
         elseif right
             fprintf('right\n');
-            back_up();
+%             back_up();
             update_position();
             turn(75);
             arc(radius);
@@ -95,6 +101,7 @@ function followObjectClockwise()
         end
         pause(p)
     end
+    SetFwdVelAngVelCreate(port,0,0);
 end
 
 function update_position()
@@ -107,8 +114,9 @@ function update_position()
     end
     
     dt = toc(start_arc);
-    dx = abs(radius)*(cosd((180*speed*dt)/(pi*abs(radius)))+1);
-    dy = abs(radius)*sind((180*speed*dt)/(pi*abs(radius)));
+    d_theta = -(speed*dt*180)/(pi*abs(radius));
+    dx = abs(radius)*(1+cosd(180+d_theta));
+    dy = abs(radius)*sind(180+d_theta);
             
     rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
            sind(glob_theta-90), cosd(glob_theta-90)];
@@ -116,9 +124,15 @@ function update_position()
             
     glob_x = glob_x + delta_coords(1);
     glob_y = glob_y + delta_coords(2);
-    glob_theta = glob_theta - (speed*dt*180)/(pi*abs(radius));
+    
+    glob_theta = glob_theta +d_theta;
     glob_theta = mod(glob_theta,360);
-    fprintf('dt:%f, dx:%f, dy:%f, \nnet_x:%f, net_y:%f, net_theta:%f\nnew:[%f,%f]\n\n',dt,dx,dy,delta_coords(1),delta_coords(2),glob_theta,glob_x,glob_y);
+   
+    fprintf('Arc time, angle: %f, %f\n',dt,d_theta);
+    fprintf('Global angle:    %f\n',glob_theta);
+    fprintf('[dx,dy]:         [%f,%f]\n',dx,dy);
+    fprintf('[glob_x,y]:      [%f,%f]\n\n',glob_x,glob_y);
+    
 end
 
 function back_up()
@@ -136,6 +150,9 @@ function turn(d)
     
     glob_theta = glob_theta + d;
     glob_theta = mod(glob_theta,360);
+    
+    fprintf('Turn:            %f degrees\n',d);
+    fprintf('Global Angle:    %f degrees\n\n',glob_theta);
     
     % Turn left d degrees
     v = 0;
