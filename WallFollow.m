@@ -21,7 +21,7 @@ function runtime = WallFollow(serPort)
     p = 0.05;       % Pause time
     port = serPort;
     speed = 0.2;
-    radius = -0.3;
+    radius = -0.4;
     glob_theta = 90;
     glob_x = 0;
     glob_y = 0;
@@ -46,21 +46,21 @@ function followObjectClockwise()
             fprintf('both\n');
             back_up();
             update_position();
-            turn(120);
+            turn(180); %120
             arc(radius);
             continue;
         elseif left
             fprintf('left\n');
             back_up();
             update_position(); 
-            turn(170);
+            turn(180+30);
             arc(radius);
             continue;
         elseif right
             fprintf('right\n');
             back_up();
             update_position();
-            turn(75);
+            turn(180-30);
             arc(radius);
             continue;
         end
@@ -84,15 +84,20 @@ function update_position()
     dt = toc(start_arc);
     dx = abs(r)*(1-cos(w*dt));
     dy = -abs(r)*(sin(w*dt));
-                
+    dtheta = atan(dy/dx)*(180/pi);
+   
     rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
            sind(glob_theta-90), cosd(glob_theta-90)];
     delta_coords = rot*[dx;dy];
-            
+    
     glob_x = glob_x + delta_coords(1);
     glob_y = glob_y + delta_coords(2);
-    glob_theta = glob_theta - (speed*dt*180)/(pi*abs(radius));
-    glob_theta = mod(glob_theta,360);
+%   glob_theta = glob_theta - dtheta;
+    glob_theta = mod(glob_theta + dtheta,360); % wrong formula, can't just add
+    
+    fprintf('Global Angle:   %.1f\n',glob_theta);
+    fprintf('Movement Angle: %.1f\n',dtheta);
+    
     fprintf('[%.2f, %.2f] %.2f sec (dx,dy,dt)\n[%.2f, %.2f] (net x,y)\n[%.2f, %.2f] %.2f deg (global theta, x & y)\n\n',dx,dy,dt,delta_coords(1),delta_coords(2),glob_x,glob_y,glob_theta);
 end
 
@@ -107,10 +112,8 @@ function back_up()
 end
 
 function turn(d)
-    global port glob_theta
-    
-    glob_theta = glob_theta + d;
-    glob_theta = mod(glob_theta,360);
+%   global port glob_theta
+%   glob_theta = mod(glob_theta + d,360);
     
     % Turn left d degrees
     v = 0;
