@@ -84,6 +84,11 @@ function update_position()
     dt = toc(start_arc);
     dx = abs(r)*(1-cos(w*dt));
     dy = -abs(r)*(sin(w*dt));
+    
+    % or is it?
+    % dy = abs(r)*(1-cos(w*dt));
+    % dx = -abs(r)*(sin(w*dt));
+    
     dtheta = atan(dy/dx)*(180/pi);
    
     rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
@@ -112,8 +117,8 @@ function back_up()
 end
 
 function turn(d)
-%   global port glob_theta
-%   glob_theta = mod(glob_theta + d,360);
+   global port glob_theta;
+   glob_theta = mod(glob_theta + d,360);
     
     % Turn left d degrees
     v = 0;
