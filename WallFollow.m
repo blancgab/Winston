@@ -28,35 +28,6 @@ function runtime = WallFollow(serPort)
     hits = 0;
     
     followObjectClockwise();
-%     
-%     hits = 1;
-%     radius = -1;
-%     arc(radius);
-%     pause(7.8539);
-%     update_position();
-%     SetFwdVelAngVelCreate(port,0,0);
-%     pause(2);
-%     
-%     arc(radius);
-%     pause(7.8539);
-%     update_position();
-%     SetFwdVelAngVelCreate(port,0,0);
-%     pause(2);
-%     
-%     arc(radius);
-%     pause(7.8539);
-%     update_position();
-%     SetFwdVelAngVelCreate(port,0,0);
-%     pause(2);
-%     
-%     arc(radius);
-%     pause(7.8539);
-%     update_position();
-%     SetFwdVelAngVelCreate(port,0,0);
-%     pause(2);
-%     
-    
-    BeepRoomba(port);
         
 end
 
@@ -99,17 +70,21 @@ end
 
 function update_position()
     global start_arc radius speed glob_theta glob_x glob_y hits;
-    hits = hits+1;
+    hits = hits + 1;
     
-    if hits<2
+    if hits < 2
         fprintf('%f, [%f,%f]\n',glob_theta,glob_x,glob_y);
         return;
     end
     
+    r = radius;
+    v = speed;
+    w = v/r;
+    
     dt = toc(start_arc);
-    dx = abs(radius)*(cosd((180*speed*dt)/(pi*abs(radius)))+1);
-    dy = abs(radius)*sind((180*speed*dt)/(pi*abs(radius)));
-            
+    dx = abs(r)*(1-cos(w*dt));
+    dy = -abs(r)*(sin(w*dt));
+                
     rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
            sind(glob_theta-90), cosd(glob_theta-90)];
     delta_coords = rot*[dx;dy];
@@ -118,7 +93,7 @@ function update_position()
     glob_y = glob_y + delta_coords(2);
     glob_theta = glob_theta - (speed*dt*180)/(pi*abs(radius));
     glob_theta = mod(glob_theta,360);
-    fprintf('dt:%f, dx:%f, dy:%f, \nnet_x:%f, net_y:%f, net_theta:%f\nnew:[%f,%f]\n\n',dt,dx,dy,delta_coords(1),delta_coords(2),glob_theta,glob_x,glob_y);
+    fprintf('[%.2f, %.2f] %.2f sec (dx,dy,dt)\n[%.2f, %.2f] (net x,y)\n[%.2f, %.2f] %.2f deg (global theta, x & y)\n\n',dx,dy,dt,delta_coords(1),delta_coords(2),glob_x,glob_y,glob_theta);
 end
 
 function back_up()
