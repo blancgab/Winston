@@ -81,9 +81,9 @@ function update_position()
     v = speed;
     w = v/r;
     
-    dt = toc(start_arc);
-    dx = -abs(r)*(sin(w*dt));
-    dy = abs(r)*(1-cos(w*dt));
+    dt = toc(start_arc);    
+    dx = abs(r)*(1-cos(w*dt));
+    dy = -abs(r)*(sin(w*dt));
     dtheta = w*dt*(180/pi);
    
     rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
