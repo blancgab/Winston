@@ -82,14 +82,9 @@ function update_position()
     w = v/r;
     
     dt = toc(start_arc);
-    dx = abs(r)*(1-cos(w*dt));
-    dy = -abs(r)*(sin(w*dt));
-    
-    % or is it?
-    % dy = abs(r)*(1-cos(w*dt));
-    % dx = -abs(r)*(sin(w*dt));
-    
-    dtheta = atan(dy/dx)*(180/pi);
+    dx = -abs(r)*(sin(w*dt));
+    dy = abs(r)*(1-cos(w*dt));
+    dtheta = w*dt*(180/pi);
    
     rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
            sind(glob_theta-90), cosd(glob_theta-90)];
@@ -97,8 +92,7 @@ function update_position()
     
     glob_x = glob_x + delta_coords(1);
     glob_y = glob_y + delta_coords(2);
-%   glob_theta = glob_theta - dtheta;
-    glob_theta = mod(glob_theta + dtheta,360); % wrong formula, can't just add
+    glob_theta = mod(glob_theta + dtheta,360);
     
     fprintf('Global Angle:   %.1f\n',glob_theta);
     fprintf('Movement Angle: %.1f\n',dtheta);
