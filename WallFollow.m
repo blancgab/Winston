@@ -27,32 +27,34 @@ function runtime = WallFollow(serPort)
     glob_y = 0;
     hits = 0;
     
-%     followObjectClockwise();
-    
-    arc(1);
-    pause(7.8539);
-    update_position();
-    SetFwdVelAngVelCreate(port,0,0);
-    pause(2);
-    
-    arc(1);
-    pause(7.8539);
-    update_position();
-    SetFwdVelAngVelCreate(port,0,0);
-    pause(2);
-    
-    arc(1);
-    pause(7.8539);
-    update_position();
-    SetFwdVelAngVelCreate(port,0,0);
-    pause(2);
-    
-    arc(1);
-    pause(7.8539);
-    update_position();
-    SetFwdVelAngVelCreate(port,0,0);
-    pause(2);
-    
+    followObjectClockwise();
+%     
+%     hits = 1;
+%     radius = -1;
+%     arc(radius);
+%     pause(7.8539);
+%     update_position();
+%     SetFwdVelAngVelCreate(port,0,0);
+%     pause(2);
+%     
+%     arc(radius);
+%     pause(7.8539);
+%     update_position();
+%     SetFwdVelAngVelCreate(port,0,0);
+%     pause(2);
+%     
+%     arc(radius);
+%     pause(7.8539);
+%     update_position();
+%     SetFwdVelAngVelCreate(port,0,0);
+%     pause(2);
+%     
+%     arc(radius);
+%     pause(7.8539);
+%     update_position();
+%     SetFwdVelAngVelCreate(port,0,0);
+%     pause(2);
+%     
     
     BeepRoomba(port);
         
@@ -105,16 +107,16 @@ function update_position()
     end
     
     dt = toc(start_arc);
-    dx = abs(radius)*(sind((180*speed*dt)/(pi*abs(radius)))+1);
-    dy = abs(radius)*cosd((180*speed*dt)/(pi*abs(radius)));
+    dx = abs(radius)*(cosd((180*speed*dt)/(pi*abs(radius)))+1);
+    dy = abs(radius)*sind((180*speed*dt)/(pi*abs(radius)));
             
-    rot = [cosd(glob_theta), -sind(glob_theta);... 
-           sind(glob_theta), cosd(glob_theta)];
+    rot = [cosd(glob_theta-90), -sind(glob_theta-90);... 
+           sind(glob_theta-90), cosd(glob_theta-90)];
     delta_coords = rot*[dx;dy];
             
     glob_x = glob_x + delta_coords(1);
     glob_y = glob_y + delta_coords(2);
-    glob_theta = glob_theta - (speed*dt*180)/(pi*radius);
+    glob_theta = glob_theta - (speed*dt*180)/(pi*abs(radius));
     glob_theta = mod(glob_theta,360);
     fprintf('dt:%f, dx:%f, dy:%f, \nnet_x:%f, net_y:%f, net_theta:%f\nnew:[%f,%f]\n\n',dt,dx,dy,delta_coords(1),delta_coords(2),glob_theta,glob_x,glob_y);
 end
