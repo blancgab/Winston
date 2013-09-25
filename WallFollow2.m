@@ -1,83 +1,40 @@
-function [ runtime ] = WallFollow2( serPort )
+
+% HW1 - Team #1
+
+% Adam Reis - ahr2127
+
+% Gabriel Blanco - gab2135
+function hw1_Team1( serPort )
 % Autonomous control program for the iRobot Create. When it collides with
-% an object, it will "hug" that objects contour until it returns to its
+% an object, it will circumnavigate the object then returns to its
 % original starting position.
 %
-% Input:
 % serPort - Serial port object, used for communicating over bluetooth
-%
-% Output:
-% runtime - Time elapsed since the iRobot Create began to move
 
-% WallFollow.m
-% Gabriel Blanco and Adam Reis 2013
 
-% Global constants
-
-    global maxRuntime port time speed radius step turnangle scan_freq ...
-        glob_theta rad2deg bumps;
+    % Global constants
+    global maxRuntime port time speed radius step turnangle glob_theta ...
+        rad2deg bumps;
     
-    maxRuntime = 12000; 
-    port = serPort;
-    time = tic;
-    speed = 0.07;
-    radius = -0.3;
-    step = 0.07;
-    turnangle = 120;
-    scan_freq = 20;
-    glob_theta = 90;
-    rad2deg = 180/pi;
-    bumps = 0;
+    maxRuntime = 12000;     % maximum Runtime*
+    port = serPort;         % serial Port to connect to
+    time = tic;             % for timing purposes*
+    speed = 0.07;           % speed of the iRobot
+    radius = -0.3;          % turn radius for each arc
+    step = 0.07;            % time step for each while loop
+    turnangle = 120;        % angle iRobot turns after bump
+    glob_theta = 90;        % sets the initial angle at 90 (straight up)
+    rad2deg = 180/pi;       % conversion factor for radians to degrees
+    bumps = 0;              % initializes the bump count
     
     followObjectClockwise();
-  
-%     v = 0;
-%     w = pi/2;
-%     AngleSensorRoomba(port);
-% %     t = tic;
-%     for n=1:5
-%         SetFwdVelAngVelCreate(port,v,w);
-%         pause(2);
-% %     while(glob_theta<(90+180*.96))
-% %         glob_theta = mod(glob_theta + AngleSensorRoomba(port)*rad2deg, 360);
-% %         fprintf('glob_theta: %f\n',glob_theta);
-% %         pause(step);
-% %     end
-% %     fprintf('angle sensor: %f\n',AngleSensorRoomba(port));
-%         SetFwdVelAngVelCreate(port,0,0);
-%         pause(1);
-%         dw = AngleSensorRoomba(port)*rad2deg;
-%         glob_theta = mod(glob_theta + AngleSensorRoomba(port)*rad2deg, 360);
-%         fprintf('dw: %f\n',dw);
-%         pause(1);
-%     end
-
-%     AngleSensorRoomba(port);
-%     turnAngle(port,1,180);
-%     pause(1);
-%     fprintf('angle sensor: %f\n',AngleSensorRoomba(port)*rad2deg);
-
-%     AngleSensorRoomba(port);
-%     SetFwdVelRadiusRoomba(port,speed,-1);
-%     
-%     while glob_theta>1
-%         glob_theta = mod(glob_theta+AngleSensorRoomba(port)*rad2deg, 360);
-%         fprintf('glob_theta: %f\n',glob_theta);
-%         pause(step);
-%     end
-%     SetFwdVelAngVelCreate(port,0,0);
-%     pause(1);
-%     glob_theta = mod(glob_theta+AngleSensorRoomba(port)*rad2deg, 360);
-%     fprintf('final glob_theta: %f\n',glob_theta);
-    
-
 
 end
 
 function followObjectClockwise()
 
-    global maxRuntime port time radius speed step turnangle scan_freq ...
-        glob_theta rad2deg glob_x glob_y last_meas bumps start_x start_y calib;
+    global port radius speed step turnangle glob_x glob_y last_meas ...
+        bumps start_x start_y calib;
     
     w = 0;
     calib = 0;
@@ -99,9 +56,7 @@ function followObjectClockwise()
                 start_y = glob_y;
                 calib = -.0134;
             end
-            
-%             backup();
-            
+                        
             if front
                 turn(turnangle);
                 SetFwdVelRadiusRoomba(port,speed,radius);
@@ -134,20 +89,10 @@ function followObjectClockwise()
     goToOrigin();
 end
 
-function backup()
-    global port speed glob_x glob_y glob_theta rad2deg;
-    SetFwdVelAngVelCreate(port,0,0);
-    backup_dist = -.005;
-%     glob_theta = mod(glob_theta + AngleSensorRoomba(port)*rad2deg,360);
-    travelDist(port, speed, backup_dist);
-%     
-%     glob_x = glob_x + cosd(glob_theta+180)*backup_dist;
-%     glob_y = glob_y + sind(glob_theta+180)*backup_dist;
-end
-
 function goToOrigin()
     global glob_x glob_y glob_theta port speed bumps calib;
     calib = 0;
+    
     if (glob_x>=0) %1st/4th quadrant
         theta = mod(180+atand(glob_y/glob_x),360);
         
@@ -166,8 +111,11 @@ function goToOrigin()
 end
 
 function calculatePosition()
+    % Calculates the position of the iRobot in [x,y] based on the angle of
+    % the machine (glob_theta) and the known linear velocity (speed)
 
-    global port step glob_theta rad2deg glob_x glob_y speed last_meas calib;
+    global port glob_theta rad2deg glob_x glob_y speed last_meas calib;
+    
     dt = toc(last_meas);
     last_meas = tic;
     glob_x = glob_x + cosd(glob_theta)*speed*dt;
@@ -177,24 +125,26 @@ function calculatePosition()
            
     fprintf('%f [%f,%f]\n',glob_theta, glob_x, glob_y);  
     
-    
 end
 
 
 function turn(d)
+    % Turns iRobot by d degrees, then calculates the new global angle
+
     global port glob_theta rad2deg last_meas;
     
-    turnAngle(port,.15,d);
+    turnAngle(port,0.15,d);
     glob_theta = mod(glob_theta + AngleSensorRoomba(port)*rad2deg,360);
     last_meas = tic;
 end
 
 
-
 function [BumpFront, BumpLeft, BumpRight] = bumpCheck()
+    % Checks all bump sensors to see if they have been pushed
+
     global port;
 
-    [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = ...
+    [BumpRight,BumpLeft,~,~,~,BumpFront] = ...
         BumpsWheelDropsSensorsRoomba(port);
     
 end
