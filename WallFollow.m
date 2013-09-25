@@ -64,6 +64,7 @@ function runtime = WallFollow(serPort)
     
     BeepRoomba(port);
         
+
 end
 
 function followObjectClockwise()
@@ -73,7 +74,7 @@ function followObjectClockwise()
     v = 0.5;
     w = 0;
     SetFwdVelAngVelCreate(port,v,w);
-        
+
     while (toc(t) < maxRuntime)% && (hits<5)
         [front, left, right] = bumpCheck();
        
@@ -98,6 +99,7 @@ function followObjectClockwise()
             turn(75);
             arc(radius);
             continue;
+
         end
         pause(p)
     end
@@ -108,6 +110,7 @@ function update_position()
     global start_arc radius speed glob_theta glob_x glob_y hits;
     hits = hits+1;
     
+
     if hits<2
         fprintf('%f, [%f,%f]\n',glob_theta,glob_x,glob_y);
         return;
@@ -145,6 +148,7 @@ function back_up()
     SetFwdVelAngVelCreate(port,0,0);
 end
 
+
 function turn(d)
     global port glob_theta
     
@@ -170,6 +174,7 @@ function arc(r)
     
 end
 
+
 function [BumpFront, BumpLeft, BumpRight] = bumpCheck()
     global port;
 
@@ -177,4 +182,5 @@ function [BumpFront, BumpLeft, BumpRight] = bumpCheck()
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = ...
         BumpsWheelDropsSensorsRoomba(port);
     
+
 end
