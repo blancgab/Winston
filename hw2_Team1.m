@@ -5,7 +5,7 @@
 % Gabriel Blanco - gab2135
 
 %%
-function hw2_Team2(serPort)
+function hw2_Team1(serPort)
 
     % Comments comments comments
     % Comments comments comments
@@ -38,6 +38,18 @@ function hw2_Team2(serPort)
     dist_from_start = 0.3;
     dist_from_first_hit = 0.2;
     
+    figure(2);
+
+    X = [0];
+    Y = [0];
+    plot(X,Y);
+        xlim([-5,5]);
+        ylim([-5,5]);
+        set(gca,'xtick',-5:5);
+        set(gca,'ytick',-5:5);
+        grid;
+        axis square;
+    
     %% State Definition
     
     % 1 -> Move Forward, 
@@ -47,7 +59,7 @@ function hw2_Team2(serPort)
     % 5 -> Stop and Orient at Start Position
     
     state = 1;  
-    
+        
     %% Main Loop
     
     while 1
@@ -67,7 +79,19 @@ function hw2_Team2(serPort)
         first_hit_angle = first_hit_angle + d_theta;
         first_hit_x     = first_hit_x + sin(first_hit_angle) * d_dist;
         first_hit_y     = first_hit_y + cos(first_hit_angle) * d_dist;
-                
+
+        X = [X,glob_x];
+        Y = [Y,glob_y];
+        
+        figure(2);
+        plot(X,Y);
+        xlim([-5,5]);
+        ylim([-5,5]);
+        set(gca,'xtick',-5:5);
+        set(gca,'ytick',-5:5);
+        grid;
+        axis square;
+        
         drawnow;
         
         start_distance = Distance(glob_x, glob_y);
@@ -80,7 +104,7 @@ function hw2_Team2(serPort)
             % Move Forward
             case 1
                 display('Moving Forward');
-                SetFwdVelAngVelCreate(port, velocity, 0 );
+                SetFwdVelAngVelCreate(port, velocity, 0);
                 if (BumpRight || BumpLeft || BumpFront)
                     state = 2; % -> Wall Follow
                     first_hit_angle = 0;
@@ -88,23 +112,23 @@ function hw2_Team2(serPort)
                     first_hit_y = 0;                    
                 end
             
-            % Wall Follow | Haven't left the threshold of the hit point
+            % Wall Follow (Before leaving the threshold of the hit point)
             case 2
-                WallFollow(velocity, angular_vel, BumpRight, BumpLeft, BumpFront, Wall);
+                WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall);
                 if (hit_distance > dist_from_first_hit)
-                    state = 3;
+                    state = 3; % Leave threshold
                 end
             
-            % Wall Follow | Left the threshold of the hit point
+            % Wall Follow (After leaving the threshold of the hit point)
             case 3
-                WallFollow(velocity, angular_vel, BumpRight, BumpLeft, BumpFront, Wall);
+                WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall);
                 if(hit_distance < dist_from_first_hit)
                    state = 4; 
                 end
             
             % Go Back to Start Position    
             case 4               
-                turnAngle(port, angular_vel, glob_theta);
+                turnAngle(port, angular_vel, glob_theta); %*(180/pi) );
                 glob_theta = mod(glob_theta, pi) + pi;
                 if (pi * 0.9 < glob_theta) && (glob_theta < pi * 1.1)
                     SetFwdVelAngVelCreate(port, velocity, 0 );
@@ -129,18 +153,18 @@ end
 
 
 %% 
-function WallFollow(velocity, angular_vel, BumpRight, BumpLeft, BumpFront, Wall)
+function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
 
     global port;
 
     % Angle Velocity for different bumps
-    w_bumpright =  4 * angular_vel;
     w_bumpleft  =  2 * angular_vel;
     w_bumpfront =  3 * angular_vel;
+    w_bumpright =  4 * angular_vel;
     w_nowall    = -4 * angular_vel;
     
     
-    if BumpRight || BumpLeft || BumpFront
+    if BumpLeft || BumpFront || BumpRight
         v = 0;                              % Set Velocity to 0
     elseif ~Wall
         v = 0.25 * velocity;                % Set Velocity to 1/4 of the default
@@ -149,23 +173,25 @@ function WallFollow(velocity, angular_vel, BumpRight, BumpLeft, BumpFront, Wall)
     end
 
     
-    if BumpRight
-        w = w_bumpright;                  % Set Angular Velocity to w_bumpright
-    elseif BumpLeft
+    if BumpLeft
         w = w_bumpleft;                   % Set Angular Velocity to w_bumpleft
     elseif BumpFront
         w = w_bumpfront;                  % Set Angular Velocity to w_bumpfront
+    elseif BumpRight
+        w = w_bumpright;                  % Set Angular Velocity to w_bumpright
     elseif ~Wall
         w = w_nowall;                     % Set Angular Velocity to w_nowall
     else
         w = 0;                            % Set Angular Velocity to 0
     end
     
-    
     SetFwdVelAngVelCreate(port, v, w);
+    
 end
 
 %% Distance Formula
 function [dist] = Distance(x,y)
+
     dist = sqrt(x^2 + y^2);
+
 end
