@@ -20,10 +20,13 @@ function hw2_Team1(serPort)
     clc;
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
 
+    % Goal Distance
+    goal_y    = 5;
+    
     % Current Position
     glob_x     = 0;
     glob_y     = 0;
-    glob_theta = 0;
+    glob_theta = 0;           % NOTE TO ADAM, TAs SET ANGLE 0 TO BE "NORTH"
     
     % First Hit Position
     first_hit_x = 0;
@@ -34,10 +37,15 @@ function hw2_Team1(serPort)
     velocity = 0.2;
     angular_vel = 0.1;
     
-    % Distance
-    dist_from_start = 0.3;
-    dist_from_first_hit = 0.2;
+    % Thresholds
+    hit_threshold = 0.2;
+    goal_threshold = 0.2;    
     
+    % Init State
+    state = 1; 
+    i = 1;
+
+    % Plot
     figure(2);
 
     X = [0];
@@ -49,17 +57,7 @@ function hw2_Team1(serPort)
         set(gca,'ytick',-5:5);
         grid;
         axis square;
-    
-    %% State Definition
-    
-    % 1 -> Move Forward, 
-    % 2 -> Wall Follow | Haven't left the threshold of the hit point
-    % 3 -> Wall Follow | Left the threshold of the hit point
-    % 4 -> Go Back to Start Position  
-    % 5 -> Stop and Orient at Start Position
-    
-    state = 1;  
-        
+            
     %% Main Loop
     
     while 1
@@ -71,31 +69,39 @@ function hw2_Team1(serPort)
         d_theta = AngleSensorRoomba(port);                   % Poll for Angle delta
         
         % Keep tracking the position and angle before the first hit
-        glob_theta = glob_theta + d_theta;               
-        glob_x     = glob_x + sin(glob_theta) * d_dist;
-        glob_y     = glob_y + cos(glob_theta) * d_dist;
+        prev_glob_x = glob_x;
+        prev_glob_theta = glob_theta;
+        
+        glob_theta  = glob_theta + d_theta;               
+        glob_x      = glob_x - sin(glob_theta) * d_dist;
+        glob_y      = glob_y + cos(glob_theta) * d_dist;                    
         
         % Keep tracking the position and angle after the first hit
         first_hit_angle = first_hit_angle + d_theta;
         first_hit_x     = first_hit_x + sin(first_hit_angle) * d_dist;
         first_hit_y     = first_hit_y + cos(first_hit_angle) * d_dist;
 
+        % Direction
+        after_goal   = (glob_y > goal_y);
+        before_goal  = ~after_goal; 
+        facing_left  = (glob_theta > 0);
+        facing_right = ~facing_left;
+        
         X = [X,glob_x];
         Y = [Y,glob_y];
         
         figure(2);
         plot(X,Y);
         xlim([-5,5]);
-        ylim([-5,5]);
+        ylim([-1,10]);
         set(gca,'xtick',-5:5);
-        set(gca,'ytick',-5:5);
+        set(gca,'ytick',-1:10);
         grid;
         axis square;
         
         drawnow;
         
-        start_distance = Distance(glob_x, glob_y);
-        hit_distance   = Distance(first_hit_x, first_hit_y);
+        hit_distance = Distance(first_hit_x, first_hit_y);
         
         %% State 
         
@@ -103,48 +109,113 @@ function hw2_Team1(serPort)
             
             % Move Forward
             case 1
+                                
                 display('Moving Forward');
+                
                 SetFwdVelAngVelCreate(port, velocity, 0);
-                if (BumpRight || BumpLeft || BumpFront)
+                
+                if (abs(glob_y - goal_y) < goal_threshold)
+                    state = 9;
+                elseif (BumpRight || BumpLeft || BumpFront)
                     state = 2; % -> Wall Follow
                     first_hit_angle = 0;
                     first_hit_x = 0;
-                    first_hit_y = 0;                    
+                    first_hit_y = 0; 
+                    
+                    hit(i) = glob_y;
                 end
             
             % Wall Follow (Before leaving the threshold of the hit point)
             case 2
                 WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall);
-                if (hit_distance > dist_from_first_hit)
+                if (hit_distance > hit_threshold)
                     state = 3; % Leave threshold
                 end
             
             % Wall Follow (After leaving the threshold of the hit point)
             case 3
                 WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall);
-                if(hit_distance < dist_from_first_hit)
-                   state = 4; 
+
+                % If you cross the m-line
+                if ( (glob_x <= 0 && prev_glob_x > 0) || (glob_x >= 0 && prev_glob_x < 0) )
+                    
+                    fprintf('ENCOUNTERED M-LINE\n');
+                    
+                    % Have you reached the goal?
+                	if (abs(glob_y - goal_y) < goal_threshold)
+                        state = 6;
+                    
+                    % Else, are you closer than the current hit?
+                    elseif (glob_y - hit(i) > 0)
+
+                        if (after_goal && facing_left)
+                            fprintf('Facing Left, Unobstructed\n');
+                        elseif (after_goal && facing_right)
+                            fprintf('Facing Right, Obstructed\n');
+                        end
+                        
+                        if (before_goal && facing_right)
+                            fprintf('Facing Right, Unubstructed\n');
+                        elseif (before_goal && facing_left)
+                            fprintf('Facing Left, Obstructed\n');
+                        end
+                            
+                        % And the path is unimpeded?
+                        if ((after_goal && facing_left) || (before_goal && facing_right))    
+                            leave(i) = glob_y;
+                            i = i+1;
+                            
+                            state = 4; % Turn to the m-line
+                        else
+                            fprintf('PATH OBSTRUCTED\n');
+                        end
+                        
+                    % You are back at the hit point
+                    elseif ((glob_y - hit(i)) < goal_threshold )
+                        state = 5;
+                    end
+                    
+                end
+
+            % Turn to face the M-Line    
+            case 4  
+                
+                if (before_goal)
+                    
+                    turnAngle(port, angular_vel, -glob_theta);
+                    if ( (glob_theta <= 0 && prev_glob_theta > 0) || (glob_theta >= 0 && prev_glob_theta < 0) )
+                        SetFwdVelAngVelCreate(port, velocity, 0 );
+                        state = 1;
+                    end 
+                    
+                elseif (after_goal)
+                    
+                    prev_angle = mod(prev_glob_theta,2*pi);
+                    angle = mod(glob_theta,2*pi);                    
+                    
+%                     fprintf('THETA: %.2f\n',angle);
+%                     fprintf('PI-TH: %.2f\n',pi-angle);
+                    
+                    turnAngle(port, angular_vel, pi-angle);
+                    if ( (angle <= pi && prev_angle > pi) || (angle >= pi && prev_angle < pi) )
+                        SetFwdVelAngVelCreate(port, velocity, 0 );
+                        state = 1;
+                    end 
+                    
                 end
             
-            % Go Back to Start Position    
-            case 4               
-                turnAngle(port, angular_vel, glob_theta); %*(180/pi) );
-                glob_theta = mod(glob_theta, pi) + pi;
-                if (pi * 0.9 < glob_theta) && (glob_theta < pi * 1.1)
-                    SetFwdVelAngVelCreate(port, velocity, 0 );
-                    state = 5;
-                end
-            
-            % Stop and Orient at Start Position    
+            % M-Line is unreachable    
             case 5
-                if start_distance < dist_from_start
-                    fprintf('Robot stopped to start point\n');
-                    SetFwdVelAngVelCreate(port, 0, 0 );
-                    fprintf('Turning to initial orientation\n');
-                    turnAngle(port, angular_vel, 180);
-                    fprintf('Robot returned to start position\n');
-                    return;
-                end
+                SetFwdVelAngVelCreate(port, 0, 0 );
+                fprintf('FAILURE\n');
+                return;
+            
+            % Reached the goal
+            case 6
+                SetFwdVelAngVelCreate(port, 0, 0 );
+                fprint('SUCCESS\n'); 
+                return;
+                
         end
         
     end
