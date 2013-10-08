@@ -44,6 +44,8 @@ function hw2_Team1(serPort)
     % Init State
     state = 1; 
     i = 1;
+    hit   = zeros(1,20);
+    leave = zeros(1,20);    
 
     % Plot
     figure(2);
@@ -103,25 +105,28 @@ function hw2_Team1(serPort)
         
         hit_distance = Distance(first_hit_x, first_hit_y);
         
+        fprintf('THETA: %.1f\n',glob_theta);
+        
+        
         %% State 
         
         switch state
             
             % Move Forward
             case 1
-                                
-                display('Moving Forward');
-                
+                                                
                 SetFwdVelAngVelCreate(port, velocity, 0);
                 
                 if (abs(glob_y - goal_y) < goal_threshold)
-                    state = 9;
+                    state = 'final';
                 elseif (BumpRight || BumpLeft || BumpFront)
                     state = 2; % -> Wall Follow
                     first_hit_angle = 0;
                     first_hit_x = 0;
                     first_hit_y = 0; 
                     
+                    fprintf('HIT #%i\n',i);
+
                     hit(i) = glob_y;
                 end
             
@@ -143,7 +148,7 @@ function hw2_Team1(serPort)
                     
                     % Have you reached the goal?
                 	if (abs(glob_y - goal_y) < goal_threshold)
-                        state = 6;
+                        state = 'final';
                     
                     % Else, are you closer than the current hit?
                     elseif (glob_y - hit(i) > 0)
@@ -161,18 +166,21 @@ function hw2_Team1(serPort)
                         end
                             
                         % And the path is unimpeded?
-                        if ((after_goal && facing_left) || (before_goal && facing_right))    
+                        if ((after_goal && facing_left) || (before_goal && facing_right))                               
+                            
                             leave(i) = glob_y;
-                            i = i+1;
+                            fprintf('LEAVE #%i\n',i);
+                            
+                            i = i+1;                            
                             
                             state = 4; % Turn to the m-line
                         else
                             fprintf('PATH OBSTRUCTED\n');
                         end
                         
-                    % You are back at the hit point
-                    elseif ((glob_y - hit(i)) < goal_threshold )
-                        state = 5;
+                    % You are back at the previous hit point
+                    elseif ( abs(glob_y - hit(i)) < goal_threshold )                        
+                        state = 'failure';
                     end
                     
                 end
@@ -205,15 +213,15 @@ function hw2_Team1(serPort)
                 end
             
             % M-Line is unreachable    
-            case 5
+            case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
-                fprintf('FAILURE\n');
+                fprintf('ERROR: Unable to reach goal\n');
                 return;
             
             % Reached the goal
-            case 6
+            case 'final'
                 SetFwdVelAngVelCreate(port, 0, 0 );
-                fprint('SUCCESS\n'); 
+                fprintf('SUCCESS: arrived at goal\n'); 
                 return;
                 
         end
