@@ -86,8 +86,8 @@ function hw2_Team1(serPort)
         % Direction
         after_goal   = (glob_y > goal_y);
         before_goal  = ~after_goal; 
-        facing_left  = (glob_theta > 0);
-        facing_right = ~facing_left;
+        facing_right = -pi < glob_theta && glob_theta < 0;        
+        facing_left  = ~facing_right;
         
         X = [X,glob_x];
         Y = [Y,glob_y];
@@ -105,7 +105,7 @@ function hw2_Team1(serPort)
         
         hit_distance = Distance(first_hit_x, first_hit_y);
         
-        fprintf('THETA: %.1f\n',glob_theta);
+        fprintf('THETA: %.1f\n',glob_theta*(180/pi));
         
         
         %% State 
