@@ -21,7 +21,7 @@ function hw2_Team1(serPort)
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
 
     % Goal Distance
-    goal_y    = 5;
+    goal_y    = 3;
     
     % Current Position
     glob_x     = 0;
@@ -34,7 +34,7 @@ function hw2_Team1(serPort)
     first_hit_angle = 0;
     
     % Velocity
-    velocity = 0.2;
+    velocity = 0.15;
     angular_vel = 0.1;
     
     % Thresholds
@@ -52,6 +52,10 @@ function hw2_Team1(serPort)
 
     X = [0];
     Y = [0];
+    THETA = [0];
+    RHO = [1];
+    count = 1;
+    
     plot(X,Y);
         xlim([-5,5]);
         ylim([-5,5]);
@@ -91,6 +95,10 @@ function hw2_Team1(serPort)
         
         X = [X,glob_x];
         Y = [Y,glob_y];
+        THETA = [THETA,glob_theta];        
+        RHO = [RHO,1+count];
+        
+        count = count + 1;
         
         figure(2);
         plot(X,Y);
@@ -222,6 +230,10 @@ function hw2_Team1(serPort)
             case 'final'
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 fprintf('SUCCESS: arrived at goal\n'); 
+                
+                figure(3);
+                polar(THETA,RHO);
+                
                 return;
                 
         end
