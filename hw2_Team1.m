@@ -41,7 +41,7 @@ function hw2_Team1(serPort)
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
 
     % Goal Distance
-    goal_y    = 8;
+    goal_y    = 10;
     
     % Current Position
     glob_x     = 0;
