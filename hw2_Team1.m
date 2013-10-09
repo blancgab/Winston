@@ -10,19 +10,26 @@ function hw2_Team1(serPort)
     % Bug 2 algorithm application implemented on an iRobot.
     % 
     % The structure of our second homework is based on the TA's solution to
-    % the first homework assignment. The robot follows an m-line (set to
-    % x=0, along the y-axis, assuming that the robot is pointing in the 
-    % direction of the m-line when the program begins). This means that
-    % all hit points, leave points and the final goal are set on the 
-    % y-axis.
-    %
-    % This function not only moves the roomba, it also plots the x and y
+    % the first homework assignment. This function uses the Bug 2 algorithm
+    % to navigate the Roomba to a position 10 meters in front of where it
+    % starts (configurable with the 'goal_y' variable.  It also plots the x and y
     % positions as it goes, in a seperate figure. The orientation data is
     % also collected, but for performance reasons, it only gets plotted
-    % after the roomba reaches the final or fail states.
+    % after the roomba reaches the final or fail states. 
     %
     % Note: the orientation graph plots theta over time in polar
-    % coordinates, with orientation being thata, and time being rho.
+    % coordinates, with orientation being thata, and time being rho.  This
+    % means that discrete time is represented by concentric rings about the
+    % origin -- for example a robot going in circles would result in a
+    % spiral graph.
+    %
+    % Double Note:  because we based our movement and coordinate system on
+    % the TA code for assignment 1, we assume that those aspects will
+    % perform correctly in the environment (bluetooth speed, operating 
+    % system, flooring, etc) for which it was originally written.  We
+    % didn't want to mess up the calibration for the test robot in the test
+    % environment, so the only changes we made were to implement the Bug 2
+    % algorithm.
     
     global port;
     
@@ -34,7 +41,7 @@ function hw2_Team1(serPort)
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
 
     % Goal Distance
-    goal_y    = 10;
+    goal_y    = 8;
     
     % Current Position
     glob_x     = 0;
@@ -214,7 +221,7 @@ function hw2_Team1(serPort)
                 elseif (after_goal)
                     
                     prev_angle = mod(prev_glob_theta,2*pi);
-                    angle = mod(glob_theta,2*pi;
+                    angle = mod(glob_theta,2*pi);
                     
                     turnAngle(port, angular_vel, pi-angle);
                     if ( (angle <= pi && prev_angle > pi) || (angle >= pi && prev_angle < pi) )
