@@ -7,9 +7,22 @@
 %%
 function hw2_Team1(serPort)
 
-    % Comments comments comments
-    % Comments comments comments
-    % Comments comments comments
+    % Bug 2 algorithm application implemented on an iRobot.
+    % 
+    % The structure of our second homework is based on the TA's solution to
+    % the first homework assignment. The robot follows an m-line (set to
+    % x=0, along the y-axis, assuming that the robot is pointing in the 
+    % direction of the m-line when the program begins). This means that
+    % all hit points, leave points and the final goal are set on the 
+    % y-axis.
+    %
+    % This function not only moves the roomba, it also plots the x and y
+    % positions as it goes, in a seperate figure. The orientation data is
+    % also collected, but for performance reasons, it only gets plotted
+    % after the roomba reaches the final or fail states.
+    %
+    % Note: the orientation graph plots theta over time in polar
+    % coordinates, with orientation being thata, and time being rho.
     
     global port;
     
@@ -21,12 +34,14 @@ function hw2_Team1(serPort)
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
 
     % Goal Distance
-    goal_y    = 3;
+    goal_y    = 10;
     
     % Current Position
     glob_x     = 0;
     glob_y     = 0;
-    glob_theta = 0;           % NOTE TO ADAM, TAs SET ANGLE 0 TO BE "NORTH"
+    glob_theta = 0;             % Theta represents the change in angle from
+                                % the starting angle. 0 represents "up",
+                                % along the y-axis
     
     % First Hit Position
     first_hit_x = 0;
@@ -47,22 +62,14 @@ function hw2_Team1(serPort)
     hit   = zeros(1,20);
     leave = zeros(1,20);    
 
-    % Plot
+    % Plot X and Y
     figure(2);
 
     X = [0];
     Y = [0];
     THETA = [0];
-    RHO = [1];
-    count = 1;
-    
-    plot(X,Y);
-        xlim([-5,5]);
-        ylim([-5,5]);
-        set(gca,'xtick',-5:5);
-        set(gca,'ytick',-5:5);
-        grid;
-        axis square;
+    RHO   = [1];
+    count = 2;
             
     %% Main Loop
     
@@ -78,25 +85,30 @@ function hw2_Team1(serPort)
         prev_glob_x = glob_x;
         prev_glob_theta = glob_theta;
         
-        glob_theta  = glob_theta + d_theta;               
-        glob_x      = glob_x - sin(glob_theta) * d_dist;
-        glob_y      = glob_y + cos(glob_theta) * d_dist;                    
+        glob_theta = glob_theta + d_theta;               
+        glob_x     = glob_x - sin(glob_theta) * d_dist;
+        glob_y     = glob_y + cos(glob_theta) * d_dist;                    
         
         % Keep tracking the position and angle after the first hit
         first_hit_angle = first_hit_angle + d_theta;
         first_hit_x     = first_hit_x + sin(first_hit_angle) * d_dist;
         first_hit_y     = first_hit_y + cos(first_hit_angle) * d_dist;
 
-        % Direction
+        % Directional Booleans
         after_goal   = (glob_y > goal_y);
         before_goal  = ~after_goal; 
         facing_right = -pi < glob_theta && glob_theta < 0;        
         facing_left  = ~facing_right;
         
+        hit_distance = sqrt(first_hit_x^2 + first_hit_y^2);        
+
+        
+        %% Plotting function
+        
         X = [X,glob_x];
         Y = [Y,glob_y];
         THETA = [THETA,glob_theta];        
-        RHO = [RHO,1+count];
+        RHO = [RHO,count];
         
         count = count + 1;
         
@@ -110,12 +122,7 @@ function hw2_Team1(serPort)
         axis square;
         
         drawnow;
-        
-        hit_distance = Distance(first_hit_x, first_hit_y);
-        
-        fprintf('THETA: %.1f\n',glob_theta*(180/pi));
-        
-        
+                
         %% State 
         
         switch state
@@ -207,10 +214,7 @@ function hw2_Team1(serPort)
                 elseif (after_goal)
                     
                     prev_angle = mod(prev_glob_theta,2*pi);
-                    angle = mod(glob_theta,2*pi);                    
-                    
-%                     fprintf('THETA: %.2f\n',angle);
-%                     fprintf('PI-TH: %.2f\n',pi-angle);
+                    angle = mod(glob_theta,2*pi;
                     
                     turnAngle(port, angular_vel, pi-angle);
                     if ( (angle <= pi && prev_angle > pi) || (angle >= pi && prev_angle < pi) )
@@ -220,17 +224,23 @@ function hw2_Team1(serPort)
                     
                 end
             
-            % M-Line is unreachable    
+            % Fail State: M-Line is unreachable    
             case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 fprintf('ERROR: Unable to reach goal\n');
+                
+                figure(3);
+                polar(THETA,RHO);                
+                
                 return;
             
-            % Reached the goal
+            % Final State: Reached the goal
             case 'final'
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 fprintf('SUCCESS: arrived at goal\n'); 
                 
+                % Plot the orientation over time. Rho is time, theta is the
+                % angle
                 figure(3);
                 polar(THETA,RHO);
                 
@@ -243,7 +253,9 @@ function hw2_Team1(serPort)
 end
 
 
-%% 
+%% Wall Following Function, copied directly from the TA Solution
+% Wall follow functionality is not as accurate in practice as in the
+% simulation.
 function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
 
     global port;
@@ -278,11 +290,4 @@ function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
     
     SetFwdVelAngVelCreate(port, v, w);
     
-end
-
-%% Distance Formula
-function [dist] = Distance(x,y)
-
-    dist = sqrt(x^2 + y^2);
-
 end
