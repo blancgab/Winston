@@ -18,6 +18,7 @@ def parse_list(input_file):
 			tmp.append((x,y))
 
 		obstacles.append(tmp)
+	return obstacles
 
 if __name__ == "__main__":
 	with open(sys.argv[1]) as input_file:
