@@ -80,7 +80,6 @@ class ObstacleGraph:
 
 	def expand_vertices(self, robot):
 		refl_robot = [(-x,-y) for x,y in robot]
-
 		exp_obstacles = []
 
 		for obstacle in self.obstacles[1:]:
@@ -98,11 +97,11 @@ class ObstacleGraph:
 
 			exp_obstacles.append(exp_tmp)
 
-		convex_hull(exp_obstacles)
+		grahams_alg(exp_obstacles)
 
 		# return exp_obstacles
 
-def convex_hull(exp_obstacles):
+def grahams_alg(exp_obstacles):
 	grown_obstacles = []
 
 	for exp_obstacle in exp_obstacles:
@@ -124,6 +123,19 @@ def convex_hull(exp_obstacles):
 		sorted_sop = sorted(set_of_points, \
 			key = lambda point: angle_sort(lowest_rightmost_point,point))
 
+		stack = [sorted_sop[0], sorted_sop[-1]]
+
+		for point in sorted_sop:
+
+			if is_left(stack[-2],stack[-1],point):
+				stack.append(point)
+			else:
+				stack.pop()
+				stack.append(point)
+
+		grown_obstacles.append(stack)
+	
+	print grown_obstacles		
 
 def parse_list(input_file):
 	input_file.seek(0,0)
@@ -143,22 +155,31 @@ def parse_list(input_file):
 	return obstacles
 
 def angle_sort(origin,target):
-	delta_y = target[1]-origin[1]
-	delta_x = target[0]-origin[0]
-	angle   = math.atan2(delta_y,delta_x)
-	dist    = math.sqrt(delta_y**2+delta_x**2)
+	a = angle(origin,target)
+	d = distance(origin,target)
+	return (a,d)
 
-	return (angle,dist)
+def angle(p1,p2):
+	delta_y = p2[1]-p1[1]
+	delta_x = p2[0]-p1[0]
+	return math.atan2(delta_y,delta_x)
 
-# def angle(origin,target):
-# 	delta_y = target[1]-origin[1]
-# 	delta_x = target[0]-origin[0]
-# 	return math.atan2(delta_y,delta_x)
+def distance(p1,p2):
+	delta_y = p2[1]-p1[1]
+	delta_x = p2[0]-p1[0]
+	return math.sqrt(delta_y**2+delta_x**2)
 
-# def dist(origin,target):
-# 	delta_y = target[1]-origin[1]
-# 	delta_x = target[0]-origin[0]
-# 	return math.sqrt(delta_y**2+delta_x**2)
+def is_left(p1, p2, p3):
+	pi = math.pi
+
+	a12 = angle(p1,p2)
+	a13 = angle(p1,p3)
+	d_theta = a13 - a12
+
+	if 0 > d_theta > pi:
+		return True
+
+	return False
 
 if __name__ == '__main__':
 
