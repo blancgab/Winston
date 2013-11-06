@@ -32,43 +32,46 @@ class ObstacleGraph:
 		self.canvas.pack()
 
 		self.obstacles = parse_list(obstacle_file)
-		self.draw_obstacles()
+		self.draw_all()
 
 		print 'done drawing'
 		self.root.mainloop()
 
-	def draw_obstacles(self):
+	def draw_all(self):
 		room = self.obstacles[0]
 		up_bound = min([-i[1] for i in room])
 		low_bound = max([-i[1] for i in room])
 		left_bound = min([-i[0] for i in room])
 		right_bound = max([-i[0] for i in room])
 
-		scale = 20
-		x_offset = 0
-		y_offset = 0
+		max_range = max((abs(up_bound-low_bound),abs(left_bound-right_bound)))
 
-		up_bound = (up_bound*scale+self.width/2)
-		low_bound = (low_bound*scale+self.width/2)
-		left_bound = (left_bound*scale+self.width/2)
-		right_bound = (right_bound*scale+self.width/2)
+		self.scaler = .9*(self.width/max_range)
 
+		mid_x = (left_bound+right_bound)/2
+		mid_y = (up_bound+low_bound)/2
 
-		self.canvas.create_line(0,up_bound,self.width,up_bound)
-		self.canvas.create_line(0,low_bound,self.width,low_bound)
-		self.canvas.create_line(left_bound, 0, left_bound, self.width)
-		self.canvas.create_line(right_bound, 0, right_bound, self.width)
+		self.x_offset = -mid_x*self.scaler
+		self.y_offset = -mid_y*self.scaler
 
-		for obstacle in self.obstacles:
-			last_x,last_y = obstacle[-1]
-			for x,y in obstacle:
-				x1 = (scale*-last_x+self.width/2)
-				y1 = (scale*-last_y+self.width/2)
-				x2 = (scale*-x+self.width/2)
-				y2 = (scale*-y+self.width/2)
-				self.canvas.create_line(x1, y1, x2, y2)
-				last_x = x
-				last_y = y
+		for index, obstacle in enumerate(self.obstacles):
+			if not index:
+				self.draw_obstacle(obstacle, 'red')
+			else:
+				self.draw_obstacle(obstacle, 'black')
+
+	def draw_obstacle(self, obs, color):
+		points = []
+		for point in obs:
+			x,y = self.scale(point)
+			points.append(x)
+			points.append(y)
+		
+		self.canvas.create_polygon(points, outline=color, fill='white')
+
+	def scale(self, point):
+		return (-point[0]*self.scaler+self.width/2+self.x_offset, \
+				-point[1]*self.scaler+self.width/2+self.y_offset)
 
 def parse_list(input_file):
 	input_file.seek(0,0)
