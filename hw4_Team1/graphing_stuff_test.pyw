@@ -98,27 +98,31 @@ class ObstacleGraph:
 
 			exp_obstacles.append(exp_tmp)
 
-		return exp_obstacles
+		convex_hull(exp_obstacles)
 
-	def convex_hull(self, exp_obstacles):
+		# return exp_obstacles
 
-		grown_obstacles = []
+def convex_hull(exp_obstacles):
+	grown_obstacles = []
 
-		for exp_obstacle in exp_obstacles:
-			set_of_points = []
+	for exp_obstacle in exp_obstacles:
+		set_of_points = []
 
-			for point in exp_obstacle:
-				set_of_points.append(point)
+		for point in exp_obstacle:
+			set_of_points.append(point)
 
-			lowest_rightmost_point = set_of_points[0]
+		lowest_rightmost_point = set_of_points[0]
 
-			for point in set_of_points:
+		for point in set_of_points:
 
-				if point[1] < lowest_rightmost_point[1]:
-					lowest_rightmost_point = point
-				elif point[1] == lowest_rightmost_point[1] and \
-					point[0] > lowest_rightmost_point[0]:
-					lowest_rightmost_point = point
+			if point[1] < lowest_rightmost_point[1]:
+				lowest_rightmost_point = point
+			elif point[1] == lowest_rightmost_point[1] and \
+				point[0] > lowest_rightmost_point[0]:
+				lowest_rightmost_point = point
+
+		sorted_sop = sorted(set_of_points, \
+			key = lambda point: angle_sort(lowest_rightmost_point,point))
 
 
 def parse_list(input_file):
@@ -138,11 +142,23 @@ def parse_list(input_file):
 		obstacles.append(tmp)
 	return obstacles
 
-def angle(origin,target):
+def angle_sort(origin,target):
 	delta_y = target[1]-origin[1]
 	delta_x = target[0]-origin[0]
+	angle   = math.atan2(delta_y,delta_x)
+	dist    = math.sqrt(delta_y**2+delta_x**2)
 
-	return math.atan2(delta_y,delta_x)
+	return (angle,dist)
+
+# def angle(origin,target):
+# 	delta_y = target[1]-origin[1]
+# 	delta_x = target[0]-origin[0]
+# 	return math.atan2(delta_y,delta_x)
+
+# def dist(origin,target):
+# 	delta_y = target[1]-origin[1]
+# 	delta_x = target[0]-origin[0]
+# 	return math.sqrt(delta_y**2+delta_x**2)
 
 if __name__ == '__main__':
 
