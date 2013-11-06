@@ -16,6 +16,7 @@ except ImportError:
 
 from sys import stdin
 import pdb
+import math
 
 class ObstacleGraph:
 	"""
@@ -43,9 +44,9 @@ class ObstacleGraph:
 
 	def draw_all(self):
 		room = self.obstacles[0]
-		up_bound = min([-i[1] for i in room])
-		low_bound = max([-i[1] for i in room])
-		left_bound = min([-i[0] for i in room])
+		up_bound    = min([-i[1] for i in room])
+		low_bound   = max([-i[1] for i in room])
+		left_bound  = min([-i[0] for i in room])
 		right_bound = max([-i[0] for i in room])
 
 		max_range = max((abs(up_bound-low_bound),abs(left_bound-right_bound)))
@@ -82,25 +83,42 @@ class ObstacleGraph:
 
 		exp_obstacles = []
 
-		for obstacle in self.obstacles:
-
+		for obstacle in self.obstacles[1:]:
 			exp_tmp = []
 
 			for j in obstacle:
 
 				for i in refl_robot:
-
 					exp_x = float(j[0]+i[0])
 					exp_y = float(j[1]+i[1])
-
 					exp_tmp.append((exp_x,exp_y))
 
 					x, y = self.scale((exp_x,exp_y))
-
 					self.canvas.create_oval(x-1,y-1,x+1,y+1)				
 
-			exp_obstacles.append(exp_tmp)	
+			exp_obstacles.append(exp_tmp)
 
+		return exp_obstacles
+
+	def convex_hull(self, exp_obstacles):
+
+		grown_obstacles = []
+
+		for exp_obstacle in exp_obstacles:
+			set_of_points = []
+
+			for point in exp_obstacle:
+				set_of_points.append(point)
+
+			lowest_rightmost_point = set_of_points[0]
+
+			for point in set_of_points:
+
+				if point[1] < lowest_rightmost_point[1]:
+					lowest_rightmost_point = point
+				elif point[1] == lowest_rightmost_point[1] and \
+					point[0] > lowest_rightmost_point[0]:
+					lowest_rightmost_point = point
 
 
 def parse_list(input_file):
@@ -120,6 +138,11 @@ def parse_list(input_file):
 		obstacles.append(tmp)
 	return obstacles
 
+def angle(origin,target):
+	delta_y = target[1]-origin[1]
+	delta_x = target[0]-origin[0]
+
+	return math.atan2(delta_y,delta_x)
 
 if __name__ == '__main__':
 
