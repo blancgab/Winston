@@ -97,15 +97,21 @@ class ObstacleGraph:
 
 			exp_obstacles.append(exp_tmp)
 
-		grahams_alg(exp_obstacles)
+		grown_obstacles = grahams_alg(exp_obstacles)
 
-		# return exp_obstacles
+		for obstacle in grown_obstacles:
+			self.draw_obstacle(obstacle, 'blue')
+
+		for obstacle in self.obstacles[1:]:
+			self.draw_obstacle(obstacle, 'black')
 
 def grahams_alg(exp_obstacles):
 	grown_obstacles = []
 
-	for exp_obstacle in exp_obstacles:
+	for index, exp_obstacle in enumerate(exp_obstacles):
 		set_of_points = []
+
+		print "Obstacle #{}".format(index)
 
 		for point in exp_obstacle:
 			set_of_points.append(point)
@@ -113,7 +119,6 @@ def grahams_alg(exp_obstacles):
 		lowest_rightmost_point = set_of_points[0]
 
 		for point in set_of_points:
-
 			if point[1] < lowest_rightmost_point[1]:
 				lowest_rightmost_point = point
 			elif point[1] == lowest_rightmost_point[1] and \
@@ -123,20 +128,30 @@ def grahams_alg(exp_obstacles):
 		sorted_sop = sorted(set_of_points, \
 			key = lambda point: angle_sort(lowest_rightmost_point,point))
 
-		stack = [sorted_sop[0], sorted_sop[-1]]
+		stack = [sorted_sop[-1], sorted_sop[0]]
 
-		for point in sorted_sop:
+		# for point in sorted_sop:
+		# 	if is_left(stack[-2],stack[-1],point):
+		# 		stack.append(point)
+		# 	else:
+		# 		stack.append(point)
+		# 		stack.pop()
 
-			if is_left(stack[-2],stack[-1],point):
-				stack.append(point)
+		i = 1
+		while i < len(sorted_sop):
+			if is_left(stack[-2], stack[-1], sorted_sop[i]):
+				stack.append(sorted_sop[i])
+				i += 1
 			else:
 				stack.pop()
-				stack.append(point)
+
+		stack.pop()
+		for point in stack:
+			print point
 
 		grown_obstacles.append(stack)
+	return grown_obstacles
 	
-	print grown_obstacles		
-
 def parse_list(input_file):
 	input_file.seek(0,0)
 
@@ -176,9 +191,8 @@ def is_left(p1, p2, p3):
 	a13 = angle(p1,p3)
 	d_theta = a13 - a12
 
-	if 0 > d_theta > pi:
+	if 0 < d_theta < pi:
 		return True
-
 	return False
 
 if __name__ == '__main__':
