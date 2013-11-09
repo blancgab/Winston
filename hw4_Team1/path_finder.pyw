@@ -35,7 +35,7 @@ class ObstacleGraph:
 		self.obstacles = parse_list(obstacle_file)
 		self.calc_frame()
 
-		self.robot    = make_octogon(.17)
+		self.robot    = make_ngon(.17,16)		
 		self.expanded = self.expand_vertices()
 		self.grown    = grahams_alg(self.expanded)
 
@@ -80,26 +80,27 @@ class ObstacleGraph:
 		self.draw_obstacle(self.obstacles[0],'red')
 
 		for g_obstacle in self.grown:
-			self.draw_obstacle(g_obstacle, 'blue')
+			self.draw_obstacle(g_obstacle, 'blue', 'light blue')
 
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
 
-		for e_obs in self.expanded:
+		# Uncomment to draw all vertices
 
-			for point in e_obs:
-				self.draw_point(point)
-			
-			self.draw_lrp(e_obs)
+		# for e_obs in self.expanded:
+		# 	for point in e_obs:
+		# 		self.draw_point(point)
+		# 	self.draw_lrp(e_obs)
 
-	def draw_obstacle(self, obs, color):
+	def draw_obstacle(self, obs, outline_color="blue", fill_color="white"):
 		points = []
 		for point in obs:
 			x,y = self.scale(point)
 			points.append(x)
 			points.append(y)
 		
-		self.canvas.create_polygon(points, outline=color, fill='white')
+		self.canvas.create_polygon(points, \
+			outline=outline_color, fill=fill_color)
 
 	def draw_point(self, point, outline_color='black', fill_color='white'):
 		x,y = self.scale(point)
@@ -113,14 +114,14 @@ class ObstacleGraph:
 			if point[1] < lowest_rightmost_point[1]:
 				lowest_rightmost_point = point
 			elif point[1] == lowest_rightmost_point[1] and \
-				point[0] > lowest_rightmost_point[0]:
+				point[0] < lowest_rightmost_point[0]:
 				lowest_rightmost_point = point
 
 		self.draw_point(lowest_rightmost_point,color,color)
 
 	def scale(self, point):
-		x = -point[0]*self.scaler+self.width/2+self.x_offset
-		y = -point[1]*self.scaler+self.width/2+self.y_offset
+		x = -(point[0]*self.scaler-self.x_offset)+self.width/2
+		y = -(point[1]*self.scaler-self.y_offset)+self.width/2
 		return (x,y)
 
 
@@ -133,9 +134,7 @@ def grahams_alg(exp_obstacles):
 	grown_obstacles = []
 
 	for exp_obstacle in exp_obstacles:
-
 		lowest_rightmost_point = exp_obstacle[0]
-
 		for point in exp_obstacle:
 			if point[1] < lowest_rightmost_point[1]:
 				lowest_rightmost_point = point
@@ -155,7 +154,6 @@ def grahams_alg(exp_obstacles):
 				i += 1
 			else:
 				stack.pop()
-
 		stack.pop()
 
 		grown_obstacles.append(stack)
@@ -178,20 +176,14 @@ def parse_list(input_file):
 		obstacles.append(tmp)
 	return obstacles
 
-def make_octogon(r):
-	octogon = []
-	s = math.sin(math.pi/8)
-	c = math.cos(math.pi/8)
-
-	octogon.append(( r  , r*s))
-	octogon.append(( r*s, r*c))
-	octogon.append((-r*s, r*c))
-	octogon.append((-r  , r*s))
-	octogon.append((-r  ,-r*s))
-	octogon.append((-r*s,-r*c))
-	octogon.append(( r*s,-r*c))
-	octogon.append(( r  ,-r*s))
-	return octogon
+def make_ngon(r,n):
+	n_gon = []
+	for i in range(n):
+		theta = i*(2*math.pi/n)
+		x = r*math.cos(theta)
+		y = r*math.sin(theta)
+		n_gon.append((x,y))
+	return n_gon
 
 def angle_sort(origin,target):
 	a = angle(origin,target)
@@ -209,13 +201,14 @@ def distance(p1,p2):
 	return math.sqrt(delta_y**2+delta_x**2)
 
 def is_left(p1, p2, p3):
-	pi = math.pi
-
-	a12 = angle(p1,p2)
+	pi  = math.pi
+	a12 = angle(p1,p2) 
 	a13 = angle(p1,p3)
-	d_theta = a13 - a12
+	if a12 > 0 and a13 < 0:
+		a13 = a13 % (2*pi) 
 
-	if 0 < d_theta < .3885*pi:
+	d_theta = (a13 - a12)
+	if 0 < d_theta < pi:
 		return True
 
 	return False
@@ -223,6 +216,5 @@ def is_left(p1, p2, p3):
 ##############################################################################
 
 if __name__ == '__main__':
-
 	with open(sys.argv[1]) as input_file:
 		graph = ObstacleGraph(input_file)
