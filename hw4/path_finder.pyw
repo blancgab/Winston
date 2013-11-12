@@ -38,7 +38,8 @@ class ObstacleGraph:
 		self.start	  = (-3.107,  0.58)
 		self.end 	  = (10.657, -0.03)
 
-		self.robot    = make_ngon(.17,16)		
+		# self.robot    = make_ngon(.17,16)
+		self.robot    = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
 		self.expanded = self.expand_vertices()
 		self.grown    = grahams_alg(self.expanded)
 
@@ -90,6 +91,7 @@ class ObstacleGraph:
 
 		self.draw_point(self.start, 'green','black',3)
 		self.draw_point(self.end,   'green','black',3)
+		self.draw_point((0,0), 'red','black',3)
 
 		# Uncomment to draw all vertices
 
