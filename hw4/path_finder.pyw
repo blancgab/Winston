@@ -77,7 +77,7 @@ class ObstacleGraph:
 		return exp_obstacles
 
 	def draw_all(self):
-		self.draw_obstacle(self.obstacles[0],'red')
+		self.draw_obstacle(self.obstacles[0],'red')	
 
 		for g_obstacle in self.grown:
 			self.draw_obstacle(g_obstacle, 'blue', 'light blue')
@@ -87,10 +87,10 @@ class ObstacleGraph:
 
 		# Uncomment to draw all vertices
 
-		# for e_obs in self.expanded:
-		# 	for point in e_obs:
-		# 		self.draw_point(point)
-		# 	self.draw_lrp(e_obs)
+		for e_obs in self.grown:
+			for point in e_obs:
+				self.draw_point(point)
+			self.draw_lrp(e_obs)
 
 	def draw_obstacle(self, obs, outline_color="blue", fill_color="white"):
 		points = []
@@ -158,7 +158,8 @@ def grahams_alg(exp_obstacles):
 
 		grown_obstacles.append(stack)
 	return grown_obstacles
-	
+
+
 def parse_list(input_file):
 	input_file.seek(0,0)
 

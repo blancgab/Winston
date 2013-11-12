@@ -42,9 +42,6 @@ def expand_vertices(robot):
 
 				exp_tmp.append((exp_x,exp_y))
 
-		print "Obstacle: {}\n".format(obstacle)
-		print "Expanded: {}\n".format(exp_tmp)
-
 		exp_obstacles.append(exp_tmp)
 
 
