@@ -1,18 +1,18 @@
-__author__ = "$Adam Reis <ahr2127@columbia.edu>, Gabriel Blanco <gab2135@columbia.edu>"
+__author__ = "$Adam Reis <ahr2127@columbia.edu>, Gabriel Blanco <gab2135@columbia.edu>, Sophie Chou <sbc2125@columbia.edu>"
 __date__ = "$Nov 5, 2013"
 
 try:
-    from tkinter import *
+	from tkinter import *
 except ImportError:
-    from Tkinter import *
+	from Tkinter import *
 try:
-    from tkinter.filedialog import askopenfilename
+	from tkinter.filedialog import askopenfilename
 except ImportError:
-    from tkFileDialog import askopenfilename
+	from tkFileDialog import askopenfilename
 try:
-    from tkinter.messagebox import *
+	from tkinter.messagebox import *
 except ImportError:
-    from tkMessageBox import *
+	from tkMessageBox import *
 
 from sys import stdin
 import pdb
@@ -38,18 +38,20 @@ class ObstacleGraph:
 		self.start	  = (-3.107,  0.58)
 		self.end 	  = (10.657, -0.03)
 
-		# self.robot    = make_ngon(.17,16)
-		self.robot    = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
+		# self.robot	= make_ngon(.17,16)
+		self.robot	= [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
 		self.expanded = self.expand_vertices()
-		self.grown    = grahams_alg(self.expanded)
+		self.grown	= grahams_alg(self.expanded)
+		self.edges = self.all_edges()
 
 		self.draw_all()
 		print 'done drawing'
 		self.root.mainloop()
 
+
 	def calc_frame(self):
 		room = self.obstacles[0]
-		up_bound    = min([-i[1] for i in room])
+		up_bound	= min([-i[1] for i in room])
 		low_bound   = max([-i[1] for i in room])
 		left_bound  = min([-i[0] for i in room])
 		right_bound = max([-i[0] for i in room])
@@ -84,7 +86,10 @@ class ObstacleGraph:
 		self.draw_obstacle(self.obstacles[0],'red')	
 
 		for g_obstacle in self.grown:
-			self.draw_obstacle(g_obstacle, 'blue', 'light blue')
+			if len(g_obstacle) != 4: 
+				self.draw_obstacle(g_obstacle, 'red', 'yellow')
+			else:
+				self.draw_obstacle(g_obstacle, 'blue', 'light blue')
 
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
@@ -95,7 +100,7 @@ class ObstacleGraph:
 
 		# Uncomment to draw all vertices
 
-		# for e_obs in self.grown:
+	 	#for e_obs in self.grown:
 		# 	for point in e_obs:
 		# 		self.draw_point(point)
 		# 	self.draw_lrp(e_obs)
@@ -133,6 +138,15 @@ class ObstacleGraph:
 		y = -(point[1]*self.scaler-self.y_offset)+self.width/2
 		return (x,y)
 
+	def all_edges(self):
+		"""All edges in visibility graph"""
+		all_vertices = [coords for obj in self.grown for coords in obj]
+		edges = []
+		for v1 in all_vertices:
+			for v2 in all_vertices:
+				if (v1[0] != v2[0]) and (v1[1] != v2[1]):
+					edges.append(sorted((v1, v2)))
+		return edges
 
 ##############################################################################
 
@@ -140,7 +154,8 @@ class ObstacleGraph:
 ##############################################################################
 
 def grahams_alg(exp_obstacles):
-	grown_obstacles = []
+			return grown_obstacles = []
+
 
 	for exp_obstacle in exp_obstacles:
 		lowest_rightmost_point = exp_obstacle[0]
