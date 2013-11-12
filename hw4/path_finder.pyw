@@ -35,6 +35,9 @@ class ObstacleGraph:
 		self.obstacles = parse_list(obstacle_file)
 		self.calc_frame()
 
+		self.start	  = (-3.107,  0.58)
+		self.end 	  = (10.657, -0.03)
+
 		self.robot    = make_ngon(.17,16)		
 		self.expanded = self.expand_vertices()
 		self.grown    = grahams_alg(self.expanded)
@@ -85,12 +88,15 @@ class ObstacleGraph:
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
 
+		self.draw_point(self.start, 'green','black',3)
+		self.draw_point(self.end,   'green','black',3)
+
 		# Uncomment to draw all vertices
 
-		for e_obs in self.grown:
-			for point in e_obs:
-				self.draw_point(point)
-			self.draw_lrp(e_obs)
+		# for e_obs in self.grown:
+		# 	for point in e_obs:
+		# 		self.draw_point(point)
+		# 	self.draw_lrp(e_obs)
 
 	def draw_obstacle(self, obs, outline_color="blue", fill_color="white"):
 		points = []
@@ -102,9 +108,10 @@ class ObstacleGraph:
 		self.canvas.create_polygon(points, \
 			outline=outline_color, fill=fill_color)
 
-	def draw_point(self, point, outline_color='black', fill_color='white'):
+	def draw_point(self, point, outline_color='black', fill_color='white', \
+		size=1):
 		x,y = self.scale(point)
-		self.canvas.create_oval(x-1,y-1,x+1,y+1, \
+		self.canvas.create_oval(x-size,y-size,x+size,y+size, \
 			outline=outline_color, fill=fill_color)
 
 	def draw_lrp(self, obstacle, color='red'):
