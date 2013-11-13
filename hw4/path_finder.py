@@ -42,7 +42,11 @@ class ObstacleGraph:
 		self.robot	= [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
 		self.expanded = self.expand_vertices()
 		self.grown	= grahams_alg(self.expanded)
-		self.edges = self.all_edges()
+		# self.edges = self.all_edges()
+		self.edges = self.remove_collisions()
+
+		self.remove_collisions()
+
 
 		self.draw_all()
 		print 'done drawing'
@@ -86,13 +90,13 @@ class ObstacleGraph:
 		self.draw_obstacle(self.obstacles[0],'red')	
 
 		for g_obstacle in self.grown:
-			if len(g_obstacle) != 4: 
-				self.draw_obstacle(g_obstacle, 'red', 'yellow')
-			else:
-				self.draw_obstacle(g_obstacle, 'blue', 'light blue')
+			self.draw_obstacle(g_obstacle, 'blue', 'light blue')
 
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
+
+		for edge in self.edges:
+			self.draw_line(edge)
 
 		self.draw_point(self.start, 'green','black',3)
 		self.draw_point(self.end,   'green','black',3)
@@ -133,6 +137,12 @@ class ObstacleGraph:
 
 		self.draw_point(lowest_rightmost_point,color,color)
 
+	def draw_line(self, edge, color="purple"):
+		x1,y1 = self.scale(edge[0])
+		x2,y2 = self.scale(edge[1])
+
+		self.canvas.create_line(x1,y1,x2,y2, fill=color)
+
 	def scale(self, point):
 		x = -(point[0]*self.scaler-self.x_offset)+self.width/2
 		y = -(point[1]*self.scaler-self.y_offset)+self.width/2
@@ -141,6 +151,9 @@ class ObstacleGraph:
 	def all_edges(self):
 		"""All edges in visibility graph"""
 		all_vertices = [coords for obj in self.grown for coords in obj]
+		all_vertices.append(self.start)
+		all_vertices.append(self.end)
+
 		edges = []
 		for v1 in all_vertices:
 			for v2 in all_vertices:
@@ -148,14 +161,26 @@ class ObstacleGraph:
 					edges.append(sorted((v1, v2)))
 		return edges
 
+	def remove_collisions(self):
+		edges = self.all_edges()
+
+		for obs in self.grown:
+			for edge in edges:
+				if check_collision(obs,edge):
+					edges.remove(edge)	
+
+		return edges
+
+
+
+
 ##############################################################################
 
 
 ##############################################################################
 
 def grahams_alg(exp_obstacles):
-			return grown_obstacles = []
-
+	grown_obstacles = []
 
 	for exp_obstacle in exp_obstacles:
 		lowest_rightmost_point = exp_obstacle[0]
