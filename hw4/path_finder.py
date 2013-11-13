@@ -168,6 +168,24 @@ def grahams_alg(exp_obstacles):
 		grown_obstacles.append(stack)
 	return grown_obstacles
 
+def check_collision(obstacle,edge):
+	origin = edge[0]
+	target = edge[1]
+	m = slope(origin,target)
+	b = origin[1] - origin[0]*m
+
+	y_min  = min([vertex[1] for vertex in obstacle])
+	y_max  = max([vertex[1] for vertex in obstacle])
+	x_min  = min([vertex[0] for vertex in obstacle])
+	x_max  = max([vertex[0] for vertex in obstacle])
+
+	x_top = (y_max - b)/m
+	x_bot = (y_min - b)/m
+
+	if x_min < x_top < x_max or x_min < x_bot < x_max:
+		return True
+
+	return False
 
 def parse_list(input_file):
 	input_file.seek(0,0)
@@ -209,6 +227,15 @@ def distance(p1,p2):
 	delta_y = p2[1]-p1[1]
 	delta_x = p2[0]-p1[0]
 	return math.sqrt(delta_y**2+delta_x**2)
+
+def slope(p1,p2):
+	delta_y = p2[1]-p1[1]
+	delta_x = p2[0]-p1[0]
+
+	if delta_x == 0:
+		return float('inf')
+
+	return delta_y/delta_x
 
 def is_left(p1, p2, p3):
 	pi  = math.pi
