@@ -241,6 +241,7 @@ def collision(obstacle,edge):
 
 
 def line_collision(l1,l2):
+	import pdb; pdb.set_trace()
 	l1_dx = l1[1][0]-l1[0][0]		
 	l1_dy = l1[1][1]-l1[0][1]
 
@@ -348,6 +349,6 @@ if __name__ == '__main__':
 	if len(sys.argv)!=2:
 		usage()
 		sys.exit(2)
-		
+
 	with open(sys.argv[1]) as input_file:
 		graph = ObstacleGraph(input_file)
