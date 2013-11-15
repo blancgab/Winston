@@ -315,7 +315,17 @@ def is_left(p1, p2, p3):
 	return False
 
 ##############################################################################
+def usage():
+	print """
+	Usage:
+		python path_finder.py [input_map]
+
+	"""
 
 if __name__ == '__main__':
+	if len(sys.argv)!=2:
+		usage()
+		sys.exit(2)
+		
 	with open(sys.argv[1]) as input_file:
 		graph = ObstacleGraph(input_file)
