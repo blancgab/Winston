@@ -1,4 +1,4 @@
-% HW2 - Team #1
+% HW3 - Team #1
 
 % Adam Reis - ahr2127
 
@@ -6,22 +6,11 @@
 
 %%
 function hw2_Team1(serPort)
-
-    % Bug 2 algorithm application implemented on an iRobot.
-    % 
-    % The structure of our second homework is based on the TA's solution to
-    % the first homework assignment. This function uses the Bug 2 algorithm
-    % to navigate the Roomba to a position 10 meters in front of where it
-    % starts (configurable with the 'goal_y' variable.  It also plots the x and y
-    % positions as it goes, in a seperate figure. The orientation data is
-    % also collected, but for performance reasons, it only gets plotted
-    % after the roomba reaches the final or fail states. 
-    %
-    % Note: the orientation graph plots theta over time in polar
-    % coordinates, with orientation being thata, and time being rho.  This
-    % means that discrete time is represented by concentric rings about the
-    % origin -- for example a robot going in circles would result in a
-    % spiral graph.
+    import java.util.LinkedList
+    % This function maps out a room and the objects within it by spiralling
+    % out from its starting position in a series of concentric squares.
+    % Each time it expands the bounds, the iRobot navigates arounds
+    % obstacles until it reaches one of the boundary conditions.
     %
     % Double Note:  because we based our movement and coordinate system on
     % the TA code for assignment 1, we assume that those aspects will
@@ -45,6 +34,17 @@ function hw2_Team1(serPort)
     temp_m = 0;
     m_direct = 1; % vertical = 1, horizontal = 0
     bumptime = tic;
+    
+    x_points = [1,0];
+    y_points = [1,2];
+    path_x = LinkedList();
+    path_y = LinkedList();
+    for i = 1:numel(x_points)
+        path_x.add(x_points(i));
+        path_y.add(y_points(i));
+    end
+
+
 %%%%%%%%%%%%%%%%%%%%%
     
     
@@ -75,9 +75,10 @@ function hw2_Team1(serPort)
    
     
     % Init State
-    state = 1; 
+    state = 5;
     i = 1;
     hit   = zeros(1,20);
+    hitx  = zeros(1,20);
     leave = zeros(1,20);    
 
     % Plot X and Y
@@ -85,6 +86,8 @@ function hw2_Team1(serPort)
 
     X = [0];
     Y = [0];
+    BUMP_X = [0];
+    BUMP_Y = [0];
 %     THETA = [0];
 %     RHO   = [1];
 %     count = 2;
@@ -92,8 +95,7 @@ function hw2_Team1(serPort)
     %% Main Loop
     
     while 1
-        fprintf('%.6f',mod(glob_theta,2*pi)*180/pi);
-        fprintf('\n');
+        fprintf('%.3f\n',mod(glob_theta,2*pi)*180/pi);
         
         %% Odometry
         
@@ -131,10 +133,8 @@ function hw2_Team1(serPort)
         
         X = [X,glob_x];
         Y = [Y,glob_y];
-%         THETA = [THETA,glob_theta];        
-%         RHO = [RHO,count];
-%         
-%         count = count + 1;
+        
+
         
         figure(2);
         plot(X,Y);
@@ -152,8 +152,7 @@ function hw2_Team1(serPort)
         switch state
             
             case 0 % turn to new_angle
-                turnAngle(port,0.15,90);
-                
+                turnAngle(port,0.15,.1);
                 theta = mod(glob_theta,2*pi);
                 prev_theta = mod(prev_glob_theta,2*pi);
                 if ( (theta <= new_angle && prev_theta > new_angle) || (theta >= new_angle && prev_theta < new_angle) )
@@ -165,9 +164,6 @@ function hw2_Team1(serPort)
             case 1
                                                 
                 SetFwdVelAngVelCreate(port, velocity, 0);
-                
-%                 if HitBoundarySquare(glob_x,glob_y,glob_theta,boundary) % reached a boundary
-%                     state = 0;
 
                 if HitBoundary(glob_x,glob_y,glob_theta,boundary)
                    if toc(bumptime)>0.4
@@ -179,18 +175,7 @@ function hw2_Team1(serPort)
                         if cur_dir ~= 'x'
 
                             fprintf('Hit Boundary.  cur_dir = %s\n',cur_dir);
-%                             m_direct = ~m_direct;
-    %                         if cur_dir == 'u'
-    %                             temp_m = glob_y;
-    %                         elseif cur_dir == 'l'
-    %                             temp_m = glob_x;
-    %                         elseif cur_dir == 'd'
-    %                             temp_m = glob_y;
-    %                         elseif cur_dir == 'r'                        
-    %                             temp_m = glob_x;
-    %                             boundary = boundary + roomba_d; 
-    %                         end
-    %                         turnAngle(port,0.15,90);
+
                         end
                         if cur_dir~='l' && cur_dir~='r'
                             if glob_y>boundary
@@ -227,9 +212,7 @@ function hw2_Team1(serPort)
                                 bumptime = tic;
                             end
 
-%                             if cur_dir == 'r'
-%                                 boundary = boundary + roomba_d;
-%                             end
+
                         end
                    end
                 end  
@@ -243,6 +226,7 @@ function hw2_Team1(serPort)
                     fprintf('HIT #%i\n',i);
 
                     hit(i) = glob_y;
+                    hitx(i) = glob_x;
                 end
             
             % Wall Follow (Before leaving the threshold of the hit point)
@@ -251,12 +235,19 @@ function hw2_Team1(serPort)
                 if (hit_distance > hit_threshold)
                     state = 3; % Leave threshold
                 end
+                
+
+                
+                BUMP_X = [BUMP_X, glob_x];
+                BUMP_Y = [BUMP_Y, glob_y];
             
             % Wall Follow (After leaving the threshold of the hit point)
             case 3
                 WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall);
 
-                
+                BUMP_X = [BUMP_X, glob_x];
+                BUMP_Y = [BUMP_Y, glob_y];
+
                 if HitBoundary(glob_x,glob_y,glob_theta,boundary)
                     state = 1;
                     continue;
@@ -268,14 +259,16 @@ function hw2_Team1(serPort)
                     crossed = (glob_y <= temp_m && prev_glob_y > temp_m) || (glob_y >= temp_m && prev_glob_y < temp_m);
                 end
                 
+                
+                if ( abs(glob_y - hit(i)) < hit_threshold ) && ( abs(glob_x - hitx(i)) < hit_threshold )               
+                        state = 'final';
+                end
+                
                 if crossed
                     
                     fprintf('ENCOUNTERED M-LINE\n');
                     
-%                     % Have you reached the goal?
-%                 	if (abs(glob_y - goal_y) < goal_threshold)
-%                         state = 'final';
-                    
+
                     % Else, are you closer than the current hit?
                     if (glob_y - hit(i) > 0)
                         fprintf('facing left: %.f\n',facing_left);
@@ -308,11 +301,9 @@ function hw2_Team1(serPort)
                         else
                             fprintf('PATH OBSTRUCTED\n');
                         end
-                        
-                    % You are back at the previous hit point
-                    elseif ( abs(glob_y - hit(i)) < hit_threshold )                        
-                        state = 'failure';
                     end
+                    % You are back at the previous hit point
+                    
                     
                 end
             % Turn to face the M-Line    
@@ -339,6 +330,11 @@ function hw2_Team1(serPort)
                     
                 end
             
+            % Follow a pre-determined path
+            case 5
+                x_dest = path_x.remove();
+                y_dest = path_y.remove();
+                
             % Fail State: M-Line is unreachable    
             case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
@@ -351,13 +347,7 @@ function hw2_Team1(serPort)
             
             % Final State: Reached the goal
             case 'final'
-                SetFwdVelAngVelCreate(port, 0, 0 );
-                OccupancyGrid(BUMP_X, BUMP_Y);
-                
-                % Plot the orientation over time. Rho is time, theta is the
-                % angle
-%                 figure(3);
-%                 polar(THETA,RHO);
+                SetFwdVelAngVelCreate(port, 0, 0 ); 
                 
                 return;
                 
@@ -413,7 +403,6 @@ function direction = Direction(glob_theta)
         direction = 'x';
     end
 end
-
 
 
 %% Wall Following Function, copied directly from the TA Solution
