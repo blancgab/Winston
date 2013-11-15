@@ -17,6 +17,7 @@ except ImportError:
 from sys import stdin
 import pdb
 import math
+import numpy
 
 class ObstacleGraph:
 	"""
@@ -167,7 +168,7 @@ class ObstacleGraph:
 		for edge in all_edges:
 			collides = False
 			for obs in self.grown:
-				if check_collision(obs,edge):
+				if collision(obs,edge):
 					collides = True
 			if not collides:
 				edges.append(edge)
@@ -207,24 +208,70 @@ def grahams_alg(exp_obstacles):
 		grown_obstacles.append(stack)
 	return grown_obstacles
 
-def check_collision(obstacle,edge):
-	origin = edge[0]
-	target = edge[1]
-	m = slope(origin,target)
-	b = origin[1] - origin[0]*m
+def collision(obstacle,edge):
+	e1 = edge[0]
+	e2 = edge[1]
+	e_slope = slope(e1,e2)
+	e_dy	= e2[1]-e1[1]
+	e_dx	= e2[0]-e2[1]
 
-	y_min  = min([vertex[1] for vertex in obstacle])
-	y_max  = max([vertex[1] for vertex in obstacle])
-	x_min  = min([vertex[0] for vertex in obstacle])
-	x_max  = max([vertex[0] for vertex in obstacle])
+	p = e1
+	r = (e_dx, e_dy)
 
-	x_top = (y_max - b)/m
-	x_bot = (y_min - b)/m
+	for v1, v2 in zip(obstacle, obstacle[1:]):
+		v_slope = slope(v1,v2)
+		v_dy	= v2[1]-v1[1]
+		v_dx	= v2[0]-v1[0]
 
-	if x_min < x_top < x_max or x_min < x_bot < x_max:
+		q = v1
+		s = (v_dx,v_dy)
+
+		norm = float(xprod(r,s))
+
+		if norm == 0:
+			return False
+
+		t = xprod( diff(q,p), s) / norm
+		u = xprod( diff(q,p), r) / norm
+
+		if 0 < t < 1 and 0 < u < 1:
+			return True
+
+	return False
+
+
+def line_collision(l1,l2):
+	l1_dx = l1[1][0]-l1[0][0]		
+	l1_dy = l1[1][1]-l1[0][1]
+
+	l2_dx = l2[1][0]-l2[0][0]	
+	l2_dy = l2[1][1]-l2[0][1]	
+
+	p = l1[0]
+	r = (l1_dx,l1_dy)
+
+	q = l2[0]
+	s = (l2_dx,l2_dy)
+
+	norm = float(xprod(r,s))
+
+	if norm == 0:
+		return False
+
+	t = xprod( diff(q,p), s) / norm
+	u = xprod( diff(q,p), r) / norm
+
+	if 0 < t < 1 and 0 < u < 1:
 		return True
 
 	return False
+
+def diff(p1,p2):
+	return (p1[0]-p2[0],p1[1]-p2[1])
+
+def xprod(p1,p2):
+	return p1[0]*p2[1]-p1[1]*p2[0]
+
 
 def parse_list(input_file):
 	input_file.seek(0,0)
