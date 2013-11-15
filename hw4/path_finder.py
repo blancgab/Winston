@@ -45,9 +45,6 @@ class ObstacleGraph:
 		self.grown	  = grahams_alg(self.expanded)
 		self.edges    = self.remove_collisions()
 
-		self.remove_collisions()
-
-
 		self.draw_all()
 		print 'done drawing'
 		self.root.mainloop()
@@ -209,33 +206,14 @@ def grahams_alg(exp_obstacles):
 	return grown_obstacles
 
 def collision(obstacle,edge):
-	e1 = edge[0]
-	e2 = edge[1]
-	e_slope = slope(e1,e2)
-	e_dy	= e2[1]-e1[1]
-	e_dx	= e2[0]-e2[1]
-
-	p = e1
-	r = (e_dx, e_dy)
-
-	for v1, v2 in zip(obstacle, obstacle[1:]):
-		v_slope = slope(v1,v2)
-		v_dy	= v2[1]-v1[1]
-		v_dx	= v2[0]-v1[0]
-
-		q = v1
-		s = (v_dx,v_dy)
-
-		norm = float(xprod(r,s))
-
-		if norm == 0:
-			return False
-
-		t = xprod( diff(q,p), s) / norm
-		u = xprod( diff(q,p), r) / norm
-
-		if 0 < t < 1 and 0 < u < 1:
+	for obs_edge in zip(obstacle, obstacle[1:]):
+		if line_collision(edge,obs_edge):
 			return True
+
+	obs_edge = (obstacle[1],obstacle[-1])
+
+	if line_collision(edge, obs_edge):
+		return True
 
 	return False
 
