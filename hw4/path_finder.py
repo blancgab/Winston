@@ -26,7 +26,7 @@ class ObstacleGraph:
 	Graphs a room and a bunch of objects in a GUI!
 	"""
 	def __init__(self, obstacle_file):
-		self.width = 1000
+		self.width = 700
 		self.exp_obstacles = []
 
 		self.root = Tk()
@@ -153,24 +153,34 @@ class ObstacleGraph:
 		all_vertices.append(self.start)
 		all_vertices.append(self.end)
 
-		edges = []
 		for v1 in all_vertices:
 			for v2 in all_vertices:
 				if (v1[0] != v2[0]) and (v1[1] != v2[1]):
-					edges.append(sorted((v1, v2)))
-		return edges
+					yield sorted((v1, v2))
 
 	def remove_collisions(self):
-		all_edges = self.all_edges()
-		edges = []
+		prelim_edges = []
 
-		for edge in all_edges:
+		# do once for expanded obstacles
+		for edge in self.all_edges():
 			collides = False
 			for obs in self.grown:
 				if collision(obs,edge):
 					collides = True
 			if not collides:
+				prelim_edges.append(edge)
+
+		# do once for non-expanded obstacles (tough to explain)
+		edges = []
+		for edge in prelim_edges:
+			collides = False
+			for obs in self.obstacles:
+				if collision(obs,edge):
+					collides = True
+			if not collides:
 				edges.append(edge)
+
+		print '{} edges'.format(len(edges))
 		return edges
 
 ##############################################################################
@@ -212,7 +222,7 @@ def collision(obstacle,edge):
 		if line_collision(edge,obs_edge):
 			return True
 
-	obs_edge = (obstacle[1],obstacle[-1])
+	obs_edge = (obstacle[0],obstacle[-1])
 
 	if line_collision(edge, obs_edge):
 		return True
@@ -221,7 +231,6 @@ def collision(obstacle,edge):
 
 
 def line_collision(l1,l2):
-	# import pdb; pdb.set_trace()
 	l1_dx = l1[1][0]-l1[0][0]		
 	l1_dy = l1[1][1]-l1[0][1]
 
