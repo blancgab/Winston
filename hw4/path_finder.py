@@ -1,4 +1,6 @@
-__author__ = "$Adam Reis <ahr2127@columbia.edu>, Gabriel Blanco <gab2135@columbia.edu>, Sophie Chou <sbc2125@columbia.edu>"
+__author__ = """$Adam Reis <ahr2127@columbia.edu>, 
+				Gabriel Blanco <gab2135@columbia.edu>, 
+				Sophie Chou <sbc2125@columbia.edu>"""
 __date__ = "$Nov 5, 2013"
 
 try:
@@ -219,7 +221,7 @@ def collision(obstacle,edge):
 
 
 def line_collision(l1,l2):
-	import pdb; pdb.set_trace()
+	# import pdb; pdb.set_trace()
 	l1_dx = l1[1][0]-l1[0][0]		
 	l1_dy = l1[1][1]-l1[0][1]
 
