@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 __author__ = """$Adam Reis <ahr2127@columbia.edu>, 
 				Gabriel Blanco <gab2135@columbia.edu>, 
 				Sophie Chou <sbc2125@columbia.edu>"""
@@ -40,12 +42,14 @@ class ObstacleGraph:
 
 		self.start	  = (-3.107,  0.58)
 		self.end 	  = (10.657, -0.03)
+		self.removed_vert = []
 
 		# self.robot = make_ngon(.17,8)
 		self.robot	  = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
 		self.expanded = self.expand_vertices()
 		self.grown	  = grahams_alg(self.expanded)
 		self.edges    = self.remove_collisions()
+
 
 		self.draw_all()
 		print 'done drawing'
@@ -103,10 +107,14 @@ class ObstacleGraph:
 
 		# Uncomment to draw all vertices
 
-	 	#for e_obs in self.grown:
-		# 	for point in e_obs:
-		# 		self.draw_point(point)
-		# 	self.draw_lrp(e_obs)
+	 	for e_obs in self.grown:
+			for point in e_obs:
+				self.draw_point(point)
+			self.draw_lrp(e_obs)
+
+		for point in self.removed_vert:
+			self.draw_point(point, 'yellow')
+		self.draw_lrp(e_obs)
 
 	def draw_obstacle(self, obs, outline_color="blue", fill_color="white"):
 		points = []
@@ -149,7 +157,7 @@ class ObstacleGraph:
 
 	def all_edges(self):
 		"""All edges in visibility graph"""
-		all_vertices = [coords for obj in self.grown for coords in obj]
+		all_vertices = self.non_overlapping_vertices()
 		all_vertices.append(self.start)
 		all_vertices.append(self.end)
 
@@ -186,6 +194,25 @@ class ObstacleGraph:
 
 		print '{} edges'.format(len(edges))
 		return edges
+
+	def non_overlapping_vertices(self):
+		vertices = [coords for obj in self.grown for coords in obj]
+
+		for obstacle in self.grown:
+
+			y_max = max([i[1] for i in obstacle])
+			y_min = min([i[1] for i in obstacle])
+			x_max = max([i[0] for i in obstacle])
+			x_min = min([i[0] for i in obstacle])
+
+			for obs in self.grown:
+				for v in obs:
+					if y_min < v[1] < y_max and x_min < v[0] < x_max:
+						vertices.remove(v)
+						self.removed_vert.append(v)
+
+		return vertices
+
 
 ##############################################################################
 
