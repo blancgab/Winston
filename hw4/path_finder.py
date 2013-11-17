@@ -21,7 +21,6 @@ except ImportError:
 from sys import stdin
 import pdb
 import math
-import numpy
 
 class ObstacleGraph:
 	"""
@@ -51,11 +50,9 @@ class ObstacleGraph:
 		self.grown	  = grahams_alg(self.expanded)
 		self.edges    = self.remove_collisions()
 
-
 		self.draw_all()
 		print 'done drawing'
 		self.root.mainloop()
-
 
 	def calc_frame(self):
 		room = self.obstacles[0]
@@ -111,7 +108,7 @@ class ObstacleGraph:
 
 		# Uncomment to draw all vertices
 
-	 # 	for e_obs in self.grown:
+		# for e_obs in self.grown:
 		# 	for point in e_obs:
 		# 		self.draw_point(point)
 		# 	self.draw_lrp(e_obs)
@@ -174,7 +171,7 @@ class ObstacleGraph:
 		prelim_edges = []
 		room = self.obstacles[0]
 
-		# do once for expanded obstacles
+		# Detect collisions with grown obstacles
 		for edge in self.all_edges():
 			collides = False
 			for obs in self.grown:
@@ -182,11 +179,10 @@ class ObstacleGraph:
 					collides = True
 				elif collision(room,edge):
 					collides = True
-
 			if not collides:
 				prelim_edges.append(edge)
 
-		# do once for non-expanded obstacles (tough to explain)
+		# Repeat for original obstacles
 		edges = []
 		for edge in prelim_edges:
 			collides = False
@@ -329,7 +325,6 @@ def xprod(p1,p2):
 
 def parse_list(input_file):
 	input_file.seek(0,0)
-
 	num_obstacles = int(input_file.readline().strip())
 	obstacles = []
 
