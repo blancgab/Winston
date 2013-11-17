@@ -39,7 +39,7 @@ class ObstacleGraph:
 		self.start	  = (-3.107,  0.58)
 		self.end 	  = (10.657, -0.03)
 
-		# self.robot = make_ngon(.17,16)
+		# self.robot = make_ngon(.17,8)
 		self.robot	  = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
 		self.expanded = self.expand_vertices()
 		self.grown	  = grahams_alg(self.expanded)
@@ -160,13 +160,17 @@ class ObstacleGraph:
 
 	def remove_collisions(self):
 		all_edges = self.all_edges()
-		edges = []
+		room 	  = self.obstacles[0]
+		edges     = []
 
 		for edge in all_edges:
 			collides = False
 			for obs in self.grown:
 				if collision(obs,edge):
 					collides = True
+				elif collision(room,edge):
+					collides = True
+
 			if not collides:
 				edges.append(edge)
 		return edges
