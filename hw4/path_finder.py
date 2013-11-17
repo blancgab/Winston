@@ -158,8 +158,9 @@ class ObstacleGraph:
 				if (v1[0] != v2[0]) and (v1[1] != v2[1]):
 					yield sorted((v1, v2))
 
-	def remove_collisions(self):
+	def remove_collisions(self):		
 		prelim_edges = []
+		room = self.obstacles[0]
 
 		# do once for expanded obstacles
 		for edge in self.all_edges():
