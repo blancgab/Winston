@@ -21,6 +21,7 @@ except ImportError:
 from sys import stdin
 import pdb
 import math
+from collections import defaultdict
 
 class ObstacleGraph:
 	"""
@@ -48,7 +49,9 @@ class ObstacleGraph:
 		self.robot	  = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
 		self.expanded = self.expand_vertices()
 		self.grown	  = grahams_alg(self.expanded)
-		self.edges    = self.remove_collisions()
+		self.edges	= self.remove_collisions()
+ 		self.vertices = self.non_overlapping_vertices() + [self.start, self.end]
+		#self.best_path = djikstra(self.vertices, self.edges, self.start, self.end)
 
 		self.draw_all()
 		print 'done drawing'
@@ -90,12 +93,15 @@ class ObstacleGraph:
 	def draw_all(self):
 		self.draw_obstacle(self.obstacles[0],'red')	
 
-		# for g_obstacle in self.grown:
-		# 	self.draw_obstacle(g_obstacle, 'blue', 'light blue')
+		for g_obstacle in self.grown:
+		 	self.draw_obstacle(g_obstacle, 'blue', 'light blue')
 
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
 
+		#for edge in self.best_path:
+		#	self.draw_line(edge)	
+		
 		for edge in self.edges:
 			self.draw_line(edge)
 
@@ -384,6 +390,73 @@ def is_left(p1, p2, p3):
 		return True
 
 	return False
+
+def djikstra(V, E, s, g):
+
+	path = defaultdict(list)
+	path[s].append(s)
+
+	dist = {}
+	for v in V:
+		if v == s:
+			dist[v] = 0.0
+		else:
+			dist[v] = float("inf")
+
+	print "path", path
+
+	i = 0	
+	x = []
+	while V:
+		#pdb.set_trace()
+
+		print "len V", len(V)
+		print "i", i 
+		i += 1 #should not exceed O(n^2) = 961
+
+		l = sorted(dist, key=dist.get, reverse=True)
+
+		v = l.pop()
+		while v not in V:
+			v = l.pop()
+
+		print "dist", dist
+		print "v", v
+
+		poss_edges = [e for e in E if e[0] == v]
+		neighbors = [n[1] for n in poss_edges]
+
+		for u in neighbors:
+			if dist[u] > dist[v] + cost(v, u):
+				dist[u] = dist[v] + cost(v,u)
+				path[u] = path[v] + [u]
+
+		V.remove(v)
+		for x in poss_edges:
+			E.remove(x)
+
+		"""
+		for u in n:
+			print 'u', u
+			if dist[u] > dist[v] + cost(v, u):
+				dist[u] = dist[v] + cost(v,u)
+				print("path v", path[v])
+				path[u] = path[v] + [u]
+		del dist[v]
+		V.remove(v)
+		x.append(v)
+		E.remove([v, u])
+		"""
+
+	bestpath = path[g]
+
+	return [[bestpath[i], bestpath[i+1]] for i in range(len(bestpath) -1)]
+        
+
+def cost(v1, v2):
+	"""Euclidean distance"""
+	return ((v2[0] - v1[0])**2 + (v2[1] - v1[1])**2)**(0.5)
+ 
 
 ##############################################################################
 
