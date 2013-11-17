@@ -43,6 +43,7 @@ class ObstacleGraph:
 		self.start	  = (-3.107,  0.58)
 		self.end 	  = (10.657, -0.03)
 		self.removed_vert = []
+		self.colliding_edges = []
 
 		# self.robot = make_ngon(.17,8)
 		self.robot	  = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
@@ -92,8 +93,8 @@ class ObstacleGraph:
 	def draw_all(self):
 		self.draw_obstacle(self.obstacles[0],'red')	
 
-		for g_obstacle in self.grown:
-			self.draw_obstacle(g_obstacle, 'blue', 'light blue')
+		# for g_obstacle in self.grown:
+		# 	self.draw_obstacle(g_obstacle, 'blue', 'light blue')
 
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
@@ -101,20 +102,23 @@ class ObstacleGraph:
 		for edge in self.edges:
 			self.draw_line(edge)
 
+		# for edge in self.colliding_edges:
+		# 	self.draw_line(edge, 'yellow')
+
 		self.draw_point(self.start, 'green','black',3)
 		self.draw_point(self.end,   'green','black',3)
 		self.draw_point((0,0), 'red','black',3)
 
 		# Uncomment to draw all vertices
 
-	 	for e_obs in self.grown:
-			for point in e_obs:
-				self.draw_point(point)
-			self.draw_lrp(e_obs)
+	 # 	for e_obs in self.grown:
+		# 	for point in e_obs:
+		# 		self.draw_point(point)
+		# 	self.draw_lrp(e_obs)
 
-		for point in self.removed_vert:
-			self.draw_point(point, 'yellow')
-		self.draw_lrp(e_obs)
+		# for point in self.removed_vert:
+		# 	self.draw_point(point, 'yellow')
+		# self.draw_lrp(e_obs)
 
 	def draw_obstacle(self, obs, outline_color="blue", fill_color="white"):
 		points = []
@@ -187,9 +191,11 @@ class ObstacleGraph:
 		for edge in prelim_edges:
 			collides = False
 			for obs in self.obstacles:
-				if collision(obs,edge):
+				if collision(obs,edge, True):
 					collides = True
-			if not collides:
+			if collides:
+				self.colliding_edges.append(edge)
+			else:
 				edges.append(edge)
 
 		print '{} edges'.format(len(edges))
@@ -248,18 +254,21 @@ def grahams_alg(exp_obstacles):
 		grown_obstacles.append(stack)
 	return grown_obstacles
 
-def collision(obstacle,edge):
+def collision(obstacle,edge, inclusive=False):
 	for obs_edge in zip(obstacle, obstacle[1:]):
 		if line_collision(edge,obs_edge):
 			return True
 
 	obs_edge = (obstacle[0],obstacle[-1])
 
-	if line_collision(edge, obs_edge):
-		return True
+	if inclusive:
+		if line_collision_inclusive(edge, obs_edge):
+			return True
+	else:
+		if line_collision(edge, obs_edge):
+			return True
 
 	return False
-
 
 def line_collision(l1,l2):
 	l1_dx = l1[1][0]-l1[0][0]		
@@ -275,7 +284,6 @@ def line_collision(l1,l2):
 	s = (l2_dx,l2_dy)
 
 	norm = float(xprod(r,s))
-
 	if norm == 0:
 		return False
 
@@ -283,6 +291,31 @@ def line_collision(l1,l2):
 	u = xprod( diff(q,p), r) / norm
 
 	if 0 < t < 1 and 0 < u < 1:
+		return True
+
+	return False
+
+def line_collision_inclusive(l1,l2):
+	l1_dx = l1[1][0]-l1[0][0]		
+	l1_dy = l1[1][1]-l1[0][1]
+
+	l2_dx = l2[1][0]-l2[0][0]	
+	l2_dy = l2[1][1]-l2[0][1]	
+
+	p = l1[0]
+	r = (l1_dx,l1_dy)
+
+	q = l2[0]
+	s = (l2_dx,l2_dy)
+
+	norm = float(xprod(r,s))
+	if norm == 0:
+		return False
+
+	t = xprod( diff(q,p), s) / norm
+	u = xprod( diff(q,p), r) / norm
+
+	if 0 <= t <= 1 and 0 <= u <= 1:
 		return True
 
 	return False

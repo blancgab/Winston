@@ -1,27 +1,14 @@
-% HW3 - Team #1
+% HW4 - Team #1
 
 % Adam Reis - ahr2127
-
+% Sophie Chou - sbc2125
 % Gabriel Blanco - gab2135
 
 %%
-function hw2_Team1(serPort)
+function hw4_Team1(serPort)
     import java.util.LinkedList
-    % This function maps out a room and the objects within it by spiralling
-    % out from its starting position in a series of concentric squares.
-    % Each time it expands the bounds, the iRobot navigates arounds
-    % obstacles until it reaches one of the boundary conditions.
-    %
-    % Double Note:  because we based our movement and coordinate system on
-    % the TA code for assignment 1, we assume that those aspects will
-    % perform correctly in the environment (bluetooth speed, operating 
-    % system, flooring, etc) for which it was originally written.  We
-    % didn't want to mess up the calibration for the test robot in the test
-    % environment, so the only changes we made were to implement the Bug 2
-    % algorithm.
     
-    global port;
-    
+    global port;    
     port = serPort;
 
     %% Variable Declaration
@@ -43,11 +30,7 @@ function hw2_Team1(serPort)
         path_x.add(x_points(i));
         path_y.add(y_points(i));
     end
-
-
 %%%%%%%%%%%%%%%%%%%%%
-    
-    
     
     [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
 
