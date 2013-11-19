@@ -32,7 +32,7 @@ class ObstacleGraph:
 		self.exp_obstacles = []
 
 		self.root = Tk()
-		self.root.title("Adam and Gabe's Obstacle Graph")
+		self.root.title("Adam and Gabe and Sophie's Obstacle Graph")
 		self.root.focus_force()
 		self.canvas = Canvas(self.root, width=self.width, height=self.width)
 		self.canvas.pack()
@@ -100,7 +100,7 @@ class ObstacleGraph:
 			self.draw_obstacle(obstacle, 'black')
 
 		#for edge in self.best_path:
-		#	self.draw_line(edge)	
+		#	self.draw_line(edge, 'red')	
 		
 		for edge in self.edges:
 			self.draw_line(edge)
@@ -391,6 +391,8 @@ def is_left(p1, p2, p3):
 
 	return False
 
+
+"""
 def djikstra(V, E, s, g):
 
 	path = defaultdict(list)
@@ -408,10 +410,6 @@ def djikstra(V, E, s, g):
 	i = 0	
 	x = []
 	while V:
-		#pdb.set_trace()
-
-		print "len V", len(V)
-		print "i", i 
 		i += 1 #should not exceed O(n^2) = 961
 
 		l = sorted(dist, key=dist.get, reverse=True)
@@ -435,28 +433,61 @@ def djikstra(V, E, s, g):
 		for x in poss_edges:
 			E.remove(x)
 
-		"""
-		for u in n:
-			print 'u', u
-			if dist[u] > dist[v] + cost(v, u):
-				dist[u] = dist[v] + cost(v,u)
-				print("path v", path[v])
-				path[u] = path[v] + [u]
-		del dist[v]
-		V.remove(v)
-		x.append(v)
-		E.remove([v, u])
-		"""
-
 	bestpath = path[g]
 
 	return [[bestpath[i], bestpath[i+1]] for i in range(len(bestpath) -1)]
-        
+"""
+
+def dijkstra(V, E, s, g):	
+	#init
+	d = {} #dist from path to vertex
+	pi = {} #predecessors graph
+
+	for v in V:
+		d[v] = float("inf")
+		pi[v] = []
+	
+	d[s] = 0.0
+
+	S = [] #set of vertices whose shortest path from source already det
+
+	while V:
+		l = sorted(d, key=d.get, reverse=True)
+		u = l.pop()
+		while u in S:
+			u = l.pop()
+
+		print S
+		print u in S
+
+		#u = min(d, key=d.get)  #vertex w. shortest distance
+		
+		print 'u', u
+		print d[u]	
+		if u == g:
+			"Reached goal"
+			break
+		S.append(u) #add u to finished set
+	
+		poss_edges = [e for e in E if e[0] == u]
+		neighbors = set([n[1] for n in poss_edges])
+
+		for v in neighbors:
+			print 'v', v
+			print d[v]	
+			if d[v] > d[u] + cost(u, v):
+				d[v] = d[u] + cost(u, v)
+				pi[v] = u
+
+		#print u
+		V.remove(u) 
+		S.append(u)
+		
+	return d, pi
 
 def cost(v1, v2):
 	"""Euclidean distance"""
 	return ((v2[0] - v1[0])**2 + (v2[1] - v1[1])**2)**(0.5)
- 
 
 ##############################################################################
 
