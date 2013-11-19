@@ -5,11 +5,11 @@
 % Gabriel Blanco - gab2135
 
 %%
-function hw4_Team1(serPort)
+function hw4_Team1()
     import java.util.LinkedList
     
     global port;    
-    port = serPort;
+%     port = serPort;
 
     %% Variable Declaration
     

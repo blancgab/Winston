@@ -5,10 +5,10 @@
 % Gabriel Blanco - gab2135
 
 %%
-function hw4_Team1_Gabe(serPort)
+function hw4_Team1_Gabe()
     
     global port;    
-    port = serPort;
+%     port = serPort;
 
     %% Generate Path
 
@@ -29,13 +29,77 @@ function hw4_Team1_Gabe(serPort)
     
     glob_x = pathX(1);
     glob_y = pathY(1);
-    glob_theta = pi/2; % Start facing +x, +y
+    glob_theta = 0; % Start facing +x, +y
     
     %% Main Loop
     
     while 1
+
+        %% Odometry
         
+        [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
+        Wall    = WallSensorReadRoomba(port);                % Poll for Wall Sensor
+        d_dist  = DistanceSensorRoomba(port);                % Poll for Distance delta
+        d_theta = AngleSensorRoomba(port);     
         
+        % Save previous x,y,theta values
+        prev_glob_x = glob_x;
+        prev_glob_y = glob_y;
+        prev_glob_theta = glob_theta;
+        
+        % Calculate new ones
+        glob_theta = glob_theta + d_theta;
+        glob_x     = glob_x - sin(glob_theta) * d_dist;
+        glob_y     = glob_y + cos(glob_theta) * d_dist;  
+        
+        state = 'start';
+        point = 1;
+        final = length(pathX);
+        
+        %% Plotting Data
+        
+        X = [X,glob_x];
+        Y = [Y,glob_y];
+        
+        figure(2);
+        plot(X,Y);
+        xlim([-5,5]);
+        ylim([-1,10]);
+        set(gca,'xtick',-5:5);
+        set(gca,'ytick',-1:10);
+        grid;
+        axis square;
+        
+        drawnow;
+        
+        %% State
+              
+        switch state
+            
+            % Turn towards next point
+            case 'turn'
+                
+                
+                
+                
+            case 'move'
+                if (point = final)
+                end
+
+            % Fail State: M-Line is unreachable    
+            case 'failure'
+                SetFwdVelAngVelCreate(port, 0, 0 );
+                fprintf('ERROR: Unable to reach goal\n');
+                return;
+                
+                
+            % Final State: Reached the goal
+            case 'final'
+                SetFwdVelAngVelCreate(port, 0, 0 );
+                return;
+                
+                
+        end
         
     end
     
