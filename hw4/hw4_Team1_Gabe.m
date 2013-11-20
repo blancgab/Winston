@@ -104,29 +104,31 @@ function hw4_Team1_Gabe(serPort)
                 else
                     turnAngle(port,ang_v,turn_angle);                    
                 end 
-                
+            
+            % Move to the next point
             case 'move'
                 if (point == final)
+                    state = 'final';
                 end
                 %travel along path (angle has been preset) to next point
                 next_x = pathX(point + 1);
-                next_y = pathY(point + 1)               
+                next_y = pathY(point + 1);
 
                 if(glob_x == next_x) %if we've moved enough
-                    point = point + 1 %go to next point
-                    state = 'turn'                    
+                    point = point + 1; %go to next point
+                    state = 'turn';
                 else
                     SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
-                    state = 'move'
+                    state = 'move';
                 end
-            % Fail State: M-Line is unreachable    
+                
+            % Fail State    
             case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 fprintf('ERROR: Unable to reach goal\n');
                 return;
                 
-                
-            % Final State: Reached the goal
+            % Final State
             case 'final'
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 return;
