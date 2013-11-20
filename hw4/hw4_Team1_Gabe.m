@@ -31,6 +31,10 @@ function hw4_Team1_Gabe()
     glob_y = pathY(1);
     glob_theta = 0; % Start facing +x, +y
     
+    
+    point = 1;
+    final = length(pathX);
+    
     %% Main Loop
     
     while 1
@@ -74,6 +78,12 @@ function hw4_Team1_Gabe()
             
             % Turn towards next point
             case 'turn'
+                
+                cur_angle = mod(glob_theta,2*pi)*180/pi;
+                
+                
+                
+                
                 if (point == final)
                     state = 'final'
                 end
