@@ -31,14 +31,15 @@ function hw4_Team1_Gabe(serPort)
     glob_y = pathY(1);
     glob_theta = 0; % Start facing +x, +y
     FWD_VEL = 0.2
-    ANGLE_VEL = 0.2
+    ANGLE_VEL = 0.1;
+    TURN = .4;
 
     X      = pathX(1);
     Y      = pathY(1);
 
     glob_theta = 0; 
     ang_v = .15;
-    threshold = .005;
+    threshold = .04;
     
     point = 1;
     final = length(pathX);
@@ -61,8 +62,8 @@ function hw4_Team1_Gabe(serPort)
         prev_glob_theta = glob_theta;
         
         glob_theta = glob_theta + d_theta;
-        glob_x     = glob_x - sin(glob_theta) * d_dist;
-        glob_y     = glob_y + cos(glob_theta) * d_dist;                      
+        glob_x     = glob_x + cos(glob_theta) * d_dist;
+        glob_y     = glob_y + sin(glob_theta) * d_dist;                      
 
         
         %% Plotting function
@@ -70,12 +71,14 @@ function hw4_Team1_Gabe(serPort)
         X = [X,glob_x];
         Y = [Y,glob_y];
         
+        fprintf('(%.2f, %.2f)\n',glob_x, glob_y);
+        
         figure(2);
         plot(X,Y);
-        xlim([-5,5]);
-        ylim([-1,10]);
-        set(gca,'xtick',-5:5);
-        set(gca,'ytick',-1:10);
+        xlim([-4,11]);
+        ylim([-4,4]);
+        set(gca,'xtick',-4:11);
+        set(gca,'ytick',-4:4);
         grid;
         axis square;
         
@@ -98,28 +101,74 @@ function hw4_Team1_Gabe(serPort)
                 d_theta = mod(atan2(dy,dx),2*pi);
                 
                 turn_angle = d_theta - cur_angle;
+                
+                fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);
+                
+                if (abs(turn_angle) < threshold)
+                    state = 'move';                                      
+                elseif (turn_angle < 0 || pi < turn_angle)
+                    state = 'turn-cw';
+                else
+                    state = 'turn-ccw';
+                end
+
+            case 'turn-cw'
+                
+                cur_angle = mod(glob_theta,2*pi);
+                nxt_x = pathX(point+1); 
+                nxt_y = pathY(point+1);
+                dx = nxt_x - glob_x;
+                dy = nxt_y - glob_y;
+                d_theta = mod(atan2(dy,dx),2*pi);
+                turn_angle = d_theta - cur_angle;                
+                fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);                
                                 
                 if (abs(turn_angle) < threshold)
-                    state = 'move';
+                    state = 'move';  
                 else
-                    turnAngle(port,ang_v,turn_angle);                    
-                end 
-            
+                    turnAngle(port,ANGLE_VEL,-TURN);                    
+                end
+                
+            case 'turn-ccw'
+                
+                cur_angle = mod(glob_theta,2*pi);
+                nxt_x = pathX(point+1); 
+                nxt_y = pathY(point+1);
+                dx = nxt_x - glob_x;
+                dy = nxt_y - glob_y;
+                d_theta = mod(atan2(dy,dx),2*pi);
+                turn_angle = d_theta - cur_angle;
+                fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);  
+                
+                if (abs(turn_angle) < threshold)
+                    state = 'move';  
+                else
+                    turnAngle(port,ANGLE_VEL,TURN);                    
+                end                
+                
             % Move to the next point
             case 'move'
-                if (point == final)
-                    state = 'final';
-                end
-                %travel along path (angle has been preset) to next point
-                next_x = pathX(point + 1);
-                next_y = pathY(point + 1);
 
-                if(glob_x == next_x) %if we've moved enough
-                    point = point + 1; %go to next point
-                    state = 'turn';
+                if (point+1 == final)
+                    state = 'final';
+
+                elseif (BumpRight || BumpLeft || BumpFront)
+                    fprintf('BUMP');
                 else
-                    SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
-                    state = 'move';
+                
+                    %travel along path (angle has been preset) to next point
+                    next_x = pathX(point + 1);
+                    next_y = pathY(point + 1);
+
+                    if(glob_x >= next_x) %if we've moved enough
+                        point = point + 1; %go to next point
+                    
+                        state = 'turn';
+                    else
+                        SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
+                        state = 'move';
+                    end
+                    
                 end
                 
             % Fail State    
