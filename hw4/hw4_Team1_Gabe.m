@@ -30,7 +30,9 @@ function hw4_Team1_Gabe()
     glob_x = pathX(1);
     glob_y = pathY(1);
     glob_theta = 0; % Start facing +x, +y
-    
+    FWD_VEL = 0.2
+    ANGLE_VEL = 0.2
+
     %% Main Loop
     
     while 1
@@ -83,8 +85,18 @@ function hw4_Team1_Gabe()
                 
                 
             case 'move'
-                if (point = final)
+                if (point == final)
                 end
+                %travel along path (angle has been preset) to next point
+                next_x = pathX(point + 1);
+                next_y = pathY(point + 1)               
+
+                if(glob_x == next_x) %if we've moved enough
+                    point = point + 1 %go to next point
+                    state = 'turn'                    
+                else
+                    SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
+                    state = 'move'
 
             % Fail State: M-Line is unreachable    
             case 'failure'
