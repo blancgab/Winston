@@ -22,6 +22,8 @@ from sys import stdin
 import pdb
 import math
 from collections import defaultdict
+from copy import deepcopy
+from Queue import PriorityQueue
 
 class ObstacleGraph:
 	"""
@@ -44,18 +46,66 @@ class ObstacleGraph:
 		self.end 	  = (10.657, -0.03)
 		self.removed_vert = []
 		self.colliding_edges = []
+		self.best_path = []
 
 		# self.robot = make_ngon(.17,8)
-		self.robot	  = [(.17,.17),(.17,-.17),(-.17,-.17),(-.17,.17)]	
+		self.robot	  = [(.2,.2),(.2,-.2),(-.2,-.2),(-.2,.2)]	
 		self.expanded = self.expand_vertices()
 		self.grown	  = grahams_alg(self.expanded)
 		self.edges	= self.remove_collisions()
  		self.vertices = self.non_overlapping_vertices() + [self.start, self.end]
-		#self.best_path = djikstra(self.vertices, self.edges, self.start, self.end)
+		# self.best_path = dijkstra(deepcopy(self.vertices), deepcopy(self.edges), self.start, self.end)
+		adjacencies = self.find_adjacencies()
+		self.dijkstra(adjacencies, self.start, self.end)
 
 		self.draw_all()
-		print 'done drawing'
+		# print 'done drawing'
 		self.root.mainloop()
+
+	def find_adjacencies(self):
+		adjacencies = defaultdict(set)
+		for edge in self.edges:
+			adjacencies[edge[0]].add(edge[1])
+			adjacencies[edge[1]].add(edge[0])
+		return adjacencies
+
+	def dijkstra(self, adjacencies, start_point, end_point):
+		seen_so_far = defaultdict(float)
+		for k in adjacencies:
+			seen_so_far[k] = float('inf')
+
+		q = PriorityQueue()
+		start = Vertex(start_point, [], 0.0)
+		q.put(start)
+		seen_so_far[start_point] = 0
+
+		while not q.empty():
+			v = q.get()
+			if v.coords == end_point:
+				new_path = v.path
+				new_path.append(end_point)
+
+				# write to file
+				with open("output", "w") as out_file:
+					for point in new_path:
+						out_file.write('{} {}\n'.format(point[0], point[1]))
+
+				for point in new_path:
+					print '{} {}'.format(point[0], point[1])
+				self.best_path = [(new_path[i], new_path[i+1]) for i in range(len(new_path)-1)]
+				return
+			for point in adjacencies[v.coords]:
+				# import pdb; pdb.set_trace()
+				new_cost = v.cost+distance(v.coords, point)
+				if seen_so_far[point]<new_cost:
+					continue
+				seen_so_far[point]=new_cost
+				new_path = deepcopy(v.path)
+				new_path.append(v.coords)
+				q.put(Vertex(point, new_path, new_cost))
+
+
+
 
 	def calc_frame(self):
 		room = self.obstacles[0]
@@ -98,12 +148,13 @@ class ObstacleGraph:
 
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
-
-		#for edge in self.best_path:
-		#	self.draw_line(edge, 'red')	
 		
-		for edge in self.edges:
-			self.draw_line(edge)
+		# for edge in self.edges:
+		# 	self.draw_line(edge)
+
+		# import pdb; pdb.set_trace()
+		for edge in self.best_path:
+			self.draw_line(edge, 'red')	
 
 		# for edge in self.colliding_edges:
 		# 	self.draw_line(edge, 'yellow')
@@ -200,7 +251,7 @@ class ObstacleGraph:
 			else:
 				edges.append(edge)
 
-		print '{} edges'.format(len(edges))
+		# print '{} edges'.format(len(edges))
 		return edges
 
 	def non_overlapping_vertices(self):
@@ -223,9 +274,22 @@ class ObstacleGraph:
 
 
 ##############################################################################
+class Vertex:
+    def __init__(self, coords, path, cost):
+        
+        self.coords = coords
+        self.path = path
+        self.cost = cost
 
+    def __lt__(self, other):
+        return self.cost<other.cost
 
 ##############################################################################
+def distance(a, b):
+    """
+    Returns the euclidian distance from (ax, ay) to (bx, by)
+    """
+    return sqrt((b[0]-a[0])^2 + (b[1]-a[1])^2)
 
 def grahams_alg(exp_obstacles):
 	grown_obstacles = []
@@ -392,98 +456,98 @@ def is_left(p1, p2, p3):
 	return False
 
 
-"""
-def djikstra(V, E, s, g):
 
-	path = defaultdict(list)
-	path[s].append(s)
+# def dijkstra(V, E, s, g):
 
-	dist = {}
-	for v in V:
-		if v == s:
-			dist[v] = 0.0
-		else:
-			dist[v] = float("inf")
+# 	path = defaultdict(list)
+# 	path[s].append(s)
 
-	print "path", path
+# 	dist = {}
+# 	for v in V:
+# 		if v == s:
+# 			dist[v] = 0.0
+# 		else:
+# 			dist[v] = float("inf")
 
-	i = 0	
-	x = []
-	while V:
-		i += 1 #should not exceed O(n^2) = 961
+# 	print "path", path
 
-		l = sorted(dist, key=dist.get, reverse=True)
+# 	i = 0	
+# 	x = []
+# 	while V:
+# 		i += 1 #should not exceed O(n^2) = 961
 
-		v = l.pop()
-		while v not in V:
-			v = l.pop()
+# 		l = sorted(dist, key=dist.get, reverse=True)
 
-		print "dist", dist
-		print "v", v
+# 		v = l.pop()
+# 		while v not in V:
+# 			v = l.pop()
 
-		poss_edges = [e for e in E if e[0] == v]
-		neighbors = [n[1] for n in poss_edges]
+# 		print "dist", dist
+# 		print "v", v
 
-		for u in neighbors:
-			if dist[u] > dist[v] + cost(v, u):
-				dist[u] = dist[v] + cost(v,u)
-				path[u] = path[v] + [u]
+# 		poss_edges = [e for e in E if e[0] == v]
+# 		neighbors = [n[1] for n in poss_edges]
 
-		V.remove(v)
-		for x in poss_edges:
-			E.remove(x)
+# 		for u in neighbors:
+# 			if dist[u] > dist[v] + cost(v, u):
+# 				dist[u] = dist[v] + cost(v,u)
+# 				path[u] = path[v] + [u]
 
-	bestpath = path[g]
+# 		V.remove(v)
+# 		for x in poss_edges:
+# 			E.remove(x)
 
-	return [[bestpath[i], bestpath[i+1]] for i in range(len(bestpath) -1)]
-"""
+# 	bestpath = path[g]
 
-def dijkstra(V, E, s, g):	
-	#init
-	d = {} #dist from path to vertex
-	pi = {} #predecessors graph
+# 	return [[bestpath[i], bestpath[i+1]] for i in range(len(bestpath) -1)]
 
-	for v in V:
-		d[v] = float("inf")
-		pi[v] = []
+
+# def dijkstra(V, E, s, g):	
+# 	#init
+# 	d = {} #dist from path to vertex
+# 	pi = {} #predecessors graph
+
+# 	for v in V:
+# 		d[v] = float("inf")
+# 		pi[v] = []
 	
-	d[s] = 0.0
+# 	d[s] = 0.0
 
-	S = [] #set of vertices whose shortest path from source already det
+# 	S = [] #set of vertices whose shortest path from source already det
 
-	while V:
-		l = sorted(d, key=d.get, reverse=True)
-		u = l.pop()
-		while u in S:
-			u = l.pop()
+# 	while V:
+# 		l = sorted(d, key=d.get, reverse=True)
+# 		u = l.pop()
+# 		while u in S:
+# 			u = l.pop()
 
-		print S
-		print u in S
+# 		print S
+# 		print u in S
 
-		#u = min(d, key=d.get)  #vertex w. shortest distance
+# 		#u = min(d, key=d.get)  #vertex w. shortest distance
 		
-		print 'u', u
-		print d[u]	
-		if u == g:
-			"Reached goal"
-			break
-		S.append(u) #add u to finished set
+# 		print 'u', u
+# 		print d[u]	
+# 		if u == g:
+# 			"Reached goal"
+# 			break
+# 		S.append(u) #add u to finished set
 	
-		poss_edges = [e for e in E if e[0] == u]
-		neighbors = set([n[1] for n in poss_edges])
+# 		poss_edges = [e for e in E if e[0] == u]
+# 		neighbors = set([n[1] for n in poss_edges])
 
-		for v in neighbors:
-			print 'v', v
-			print d[v]	
-			if d[v] > d[u] + cost(u, v):
-				d[v] = d[u] + cost(u, v)
-				pi[v] = u
+# 		for v in neighbors:
+# 			print 'v', v
+# 			print d[v]	
+# 			if d[v] > d[u] + cost(u, v):
+# 				d[v] = d[u] + cost(u, v)
+# 				pi[v] = u
 
-		#print u
-		V.remove(u) 
-		S.append(u)
+# 		#print u
+# 		V.remove(u) 
+# 		S.append(u)
 		
-	return d, pi
+# 	return d, pi
 
 def cost(v1, v2):
 	"""Euclidean distance"""
