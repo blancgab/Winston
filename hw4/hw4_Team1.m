@@ -1,8 +1,8 @@
 % HW4 - Team #1
 
+% Gabriel Blanco - gab2135
 % Adam Reis - ahr2127
 % Sophie Chou - sbc2125
-% Gabriel Blanco - gab2135
 
 %%
 function hw4_Team1_Gabe(serPort)
@@ -109,7 +109,7 @@ function hw4_Team1_Gabe(serPort)
             case 'move'
                 
                 if (BumpRight || BumpLeft || BumpFront)
-                    fprintf('BUMP');
+                    state = 'bump';
                 else
                 
                     %travel along path (angle has been preset) to next point
@@ -126,6 +126,11 @@ function hw4_Team1_Gabe(serPort)
                     end
                     
                 end
+            
+            case 'bump'
+                
+                fprintf('BUMP');
+
                 
             % Fail State    
             case 'failure'
