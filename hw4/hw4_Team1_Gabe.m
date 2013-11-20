@@ -5,10 +5,10 @@
 % Gabriel Blanco - gab2135
 
 %%
-function hw4_Team1_Gabe()
+function hw4_Team1_Gabe(serPort)
     
     global port;    
-%     port = serPort;
+    port = serPort;
 
     %% Generate Path
 
@@ -29,11 +29,16 @@ function hw4_Team1_Gabe()
     
     glob_x = pathX(1);
     glob_y = pathY(1);
-    glob_theta = 0; % Start facing +x, +y
-    
+    X      = pathX(1);
+    Y      = pathY(1);
+
+    glob_theta = 0; 
+    ang_v = .15;
+    threshold = .005;
     
     point = 1;
     final = length(pathX);
+    state = 'turn';
     
     %% Main Loop
     
@@ -79,16 +84,22 @@ function hw4_Team1_Gabe()
             % Turn towards next point
             case 'turn'
                 
-                cur_angle = mod(glob_theta,2*pi)*180/pi;
+                cur_angle = mod(glob_theta,2*pi);
                 
+                nxt_x = pathX(point+1); 
+                nxt_y = pathY(point+1);
                 
+                dx = nxt_x - glob_x;
+                dy = nxt_y - glob_y;
+                d_theta = mod(atan2(dy,dx),2*pi);
                 
-                
-                if (point == final)
-                    state = 'final'
-                end
-                
-                
+                turn_angle = d_theta - cur_angle;
+                                
+                if (abs(turn_angle) < threshold)
+                    state = 'move';
+                else
+                    turnAngle(port,ang_v,turn_angle);                    
+                end 
                 
             case 'move'
                 if (point == final)
