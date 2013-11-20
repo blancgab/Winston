@@ -5,16 +5,35 @@
 % Sophie Chou - sbc2125
 
 %%
-function hw4_Team1_Gabe(serPort)
+function hw4_Team1(serPort)
+    % Given a input file 'input3' of a room with obstacles, our function
+    % runs a python script that expands all of the obstacles, finds their
+    % convex hull and then runs Djikstra's algorithm to find the shortest
+    % path. It then outputs that path as a series of points in an output
+    % file, which this Matlab function reads.
     
+    % The function then turns and moves to each of those points, one at a
+    % time until it reaches the final point, terminating gracefully.
+    
+    %  ============ NOTE! ============
+    % 
+    %  When the Python script is run, it 
+    %  prints out the Visibility graph first.
+    %  In order to run the rest of the Matlab
+    %  function, you have to close the window
+    %  with the visibility graph.
+    %
+    %  ============ NOTE! ============
+
+
     global port;    
     port = serPort;
 
     %% Generate Path
 
     clc;
-    % system('python path_finder.py input3');
-    outputFileID = fopen('output_test');
+    system('python path_finder.py input');
+    outputFileID = fopen('output');
     A = textscan(outputFileID, '%f %f');
     fclose(outputFileID);
     
@@ -109,7 +128,7 @@ function hw4_Team1_Gabe(serPort)
             case 'move'
                 
                 if (BumpRight || BumpLeft || BumpFront)
-                    state = 'bump';
+                    fprintf('BUMP\n');
                 else
                 
                     % Travel along path (angle has been preset) to next point
@@ -126,11 +145,6 @@ function hw4_Team1_Gabe(serPort)
                     end
                     
                 end
-            
-            case 'bump'
-                
-                fprintf('BUMP');
-
                 
             % Fail State    
             case 'failure'
@@ -140,50 +154,11 @@ function hw4_Team1_Gabe(serPort)
                 
             % Final State
             case 'final'
-                fprintf('DONE');
+                fprintf('DONE\n');
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 return;
         end
         
     end
-    
-end
-
-%% Wall Following Function, copied directly from the TA Solution
-% Wall follow functionality is not as accurate in practice as in the
-% simulation.
-function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
-
-    global port;
-
-    % Angle Velocity for different bumps
-    w_bumpleft  =  2 * angular_vel;
-    w_bumpfront =  3 * angular_vel;
-    w_bumpright =  4 * angular_vel;
-    w_nowall    = -4 * angular_vel;
-    
-    
-    if BumpLeft || BumpFront || BumpRight
-        v = 0;                              % Set Velocity to 0
-    elseif ~Wall
-        v = 0.25 * velocity;                % Set Velocity to 1/4 of the default
-    else
-        v = velocity;                       % Set Velocity to the default
-    end
-
-    
-    if BumpLeft
-        w = w_bumpleft;                   % Set Angular Velocity to w_bumpleft
-    elseif BumpFront
-        w = w_bumpfront;                  % Set Angular Velocity to w_bumpfront
-    elseif BumpRight
-        w = w_bumpright;                  % Set Angular Velocity to w_bumpright
-    elseif ~Wall
-        w = w_nowall;                     % Set Angular Velocity to w_nowall
-    else
-        w = 0;                            % Set Angular Velocity to 0
-    end
-    
-    SetFwdVelAngVelCreate(port, v, w);
     
 end
