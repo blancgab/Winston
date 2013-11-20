@@ -5,10 +5,10 @@
 % Gabriel Blanco - gab2135
 
 %%
-function hw4_Team1_Gabe()
+function hw4_Team1_Gabe(serPort)
     
     global port;    
-%     port = serPort;
+    port = serPort;
 
     %% Generate Path
 
@@ -33,6 +33,17 @@ function hw4_Team1_Gabe()
     FWD_VEL = 0.2
     ANGLE_VEL = 0.2
 
+    X      = pathX(1);
+    Y      = pathY(1);
+
+    glob_theta = 0; 
+    ang_v = .15;
+    threshold = .005;
+    
+    point = 1;
+    final = length(pathX);
+    state = 'turn';
+  
     %% Main Loop
     
     while 1
@@ -42,23 +53,19 @@ function hw4_Team1_Gabe()
         [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
         Wall    = WallSensorReadRoomba(port);                % Poll for Wall Sensor
         d_dist  = DistanceSensorRoomba(port);                % Poll for Distance delta
-        d_theta = AngleSensorRoomba(port);     
+        d_theta = AngleSensorRoomba(port);                   % Poll for Angle delta
         
-        % Save previous x,y,theta values
+        % Keep tracking the position and angle before the first hit
         prev_glob_x = glob_x;
         prev_glob_y = glob_y;
         prev_glob_theta = glob_theta;
         
-        % Calculate new ones
         glob_theta = glob_theta + d_theta;
         glob_x     = glob_x - sin(glob_theta) * d_dist;
-        glob_y     = glob_y + cos(glob_theta) * d_dist;  
+        glob_y     = glob_y + cos(glob_theta) * d_dist;                      
+
         
-        state = 'start';
-        point = 1;
-        final = length(pathX);
-        
-        %% Plotting Data
+        %% Plotting function
         
         X = [X,glob_x];
         Y = [Y,glob_y];
@@ -72,7 +79,7 @@ function hw4_Team1_Gabe()
         grid;
         axis square;
         
-        drawnow;
+        drawnow; 
         
         %% State
               
@@ -81,8 +88,22 @@ function hw4_Team1_Gabe()
             % Turn towards next point
             case 'turn'
                 
+                cur_angle = mod(glob_theta,2*pi);
                 
+                nxt_x = pathX(point+1); 
+                nxt_y = pathY(point+1);
                 
+                dx = nxt_x - glob_x;
+                dy = nxt_y - glob_y;
+                d_theta = mod(atan2(dy,dx),2*pi);
+                
+                turn_angle = d_theta - cur_angle;
+                                
+                if (abs(turn_angle) < threshold)
+                    state = 'move';
+                else
+                    turnAngle(port,ang_v,turn_angle);                    
+                end 
                 
             case 'move'
                 if (point == final)
