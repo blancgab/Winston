@@ -392,7 +392,6 @@ def is_left(p1, p2, p3):
 	return False
 
 
-"""
 def djikstra(V, E, s, g):
 
 	path = defaultdict(list)
@@ -434,8 +433,8 @@ def djikstra(V, E, s, g):
 			E.remove(x)
 
 	bestpath = path[g]
-
-	return [[bestpath[i], bestpath[i+1]] for i in range(len(bestpath) -1)]
+	return bestpath
+	#return [[bestpath[i], bestpath[i+1]] for i in range(len(bestpath) -1)]
 """
 
 def dijkstra(V, E, s, g):	
@@ -484,7 +483,7 @@ def dijkstra(V, E, s, g):
 		S.append(u)
 		
 	return d, pi
-
+"""
 def cost(v1, v2):
 	"""Euclidean distance"""
 	return ((v2[0] - v1[0])**2 + (v2[1] - v1[1])**2)**(0.5)

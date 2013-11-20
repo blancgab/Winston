@@ -128,10 +128,13 @@ function hw4_Team1_Gabe(serPort)
                 end
             
             case 'bump'
-                
                 fprintf('BUMP');
-
-                
+                WallFollow(FWD_VEL, ANGLE_VEL, BumpRight, BumpLeft, BumpFront, Wall);
+                if (glob_x > pathX(point + 1) || glob_y > pathY(point + 1))
+                    state = 'turn';
+                else
+                    state = 'bump';
+                end
             % Fail State    
             case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
@@ -187,3 +190,4 @@ function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
     SetFwdVelAngVelCreate(port, v, w);
     
 end
+
