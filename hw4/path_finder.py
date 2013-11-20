@@ -30,7 +30,7 @@ class ObstacleGraph:
 	Graphs a room and a bunch of objects in a GUI!
 	"""
 	def __init__(self, obstacle_file):
-		self.width = 700
+		self.width = 1200
 		self.exp_obstacles = []
 
 		self.root = Tk()
@@ -53,6 +53,14 @@ class ObstacleGraph:
 		self.expanded = self.expand_vertices()
 		self.grown	  = grahams_alg(self.expanded)
 		self.edges	= self.remove_collisions()
+		for obstacle in self.grown:
+			new_edges = [(obstacle[i], obstacle[i+1]) for i in range(len(obstacle)-1)]
+			
+			for edge in new_edges:
+				# import pdb; pdb.set_trace()	
+				self.edges.append(edge)
+			self.edges.append((obstacle[-1], obstacle[0]))
+
  		self.vertices = self.non_overlapping_vertices() + [self.start, self.end]
 		# self.best_path = dijkstra(deepcopy(self.vertices), deepcopy(self.edges), self.start, self.end)
 		adjacencies = self.find_adjacencies()
@@ -89,9 +97,6 @@ class ObstacleGraph:
 				with open("output", "w") as out_file:
 					for point in new_path:
 						out_file.write('{} {}\n'.format(point[0], point[1]))
-
-				for point in new_path:
-					print '{} {}'.format(point[0], point[1])
 				self.best_path = [(new_path[i], new_path[i+1]) for i in range(len(new_path)-1)]
 				return
 			for point in adjacencies[v.coords]:
