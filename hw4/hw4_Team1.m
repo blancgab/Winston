@@ -29,17 +29,13 @@ function hw4_Team1_Gabe(serPort)
     
     glob_x = pathX(1);
     glob_y = pathY(1);
-    glob_theta = 0; % Start facing +x, +y
-    FWD_VEL = 0.2
-    ANGLE_VEL = 0.1;
-    TURN = .4;
-
-    X      = pathX(1);
-    Y      = pathY(1);
-
     glob_theta = 0; 
-    ang_v = .15;
-    threshold = .04;
+    FWD_VEL = 0.2;
+    ANGLE_VEL = 0.1;
+    THRESHOLD = .04;
+
+    X = pathX(1);
+    Y = pathY(1);
     
     point = 1;
     final = length(pathX);
@@ -56,11 +52,6 @@ function hw4_Team1_Gabe(serPort)
         d_dist  = DistanceSensorRoomba(port);                % Poll for Distance delta
         d_theta = AngleSensorRoomba(port);                   % Poll for Angle delta
         
-        % Keep tracking the position and angle before the first hit
-        prev_glob_x = glob_x;
-        prev_glob_y = glob_y;
-        prev_glob_theta = glob_theta;
-        
         glob_theta = glob_theta + d_theta;
         glob_x     = glob_x + cos(glob_theta) * d_dist;
         glob_y     = glob_y + sin(glob_theta) * d_dist;                      
@@ -70,9 +61,7 @@ function hw4_Team1_Gabe(serPort)
         
         X = [X,glob_x];
         Y = [Y,glob_y];
-        
-        fprintf('(%.2f, %.2f)\n',glob_x, glob_y);
-        
+                
         figure(2);
         plot(X,Y);
         xlim([-4,11]);
@@ -91,68 +80,35 @@ function hw4_Team1_Gabe(serPort)
             % Turn towards next point
             case 'turn'
                 
-                cur_angle = mod(glob_theta,2*pi);
-                
-                nxt_x = pathX(point+1); 
-                nxt_y = pathY(point+1);
-                
-                dx = nxt_x - glob_x;
-                dy = nxt_y - glob_y;
-                d_theta = mod(atan2(dy,dx),2*pi);
-                
-                turn_angle = d_theta - cur_angle;
-                
-                fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);
-                
-                if (abs(turn_angle) < threshold)
-                    state = 'move';                                      
-                elseif (turn_angle < 0 || pi < turn_angle)
-                    state = 'turn-cw';
+                if(point==final)
+                    state = 'final';
                 else
-                    state = 'turn-ccw';
-                end
-
-            case 'turn-cw'
+                    % Current angle of Roomba
+                    cur_angle = mod(glob_theta+pi,2*pi)-pi;
+                    
+                    % Angle from current position to next point
+                    nxt_x = pathX(point+1); 
+                    nxt_y = pathY(point+1);
+                    dx = nxt_x - glob_x;
+                    dy = nxt_y - glob_y;
+                    d_theta = mod(atan2(dy,dx)+pi,2*pi)-pi;
                 
-                cur_angle = mod(glob_theta,2*pi);
-                nxt_x = pathX(point+1); 
-                nxt_y = pathY(point+1);
-                dx = nxt_x - glob_x;
-                dy = nxt_y - glob_y;
-                d_theta = mod(atan2(dy,dx),2*pi);
-                turn_angle = d_theta - cur_angle;                
-                fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);                
-                                
-                if (abs(turn_angle) < threshold)
-                    state = 'move';  
-                else
-                    turnAngle(port,ANGLE_VEL,-TURN);                    
-                end
+                    % Difference between current angle & next angle
+                    turn_angle = d_theta - cur_angle;
                 
-            case 'turn-ccw'
+                    fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);
                 
-                cur_angle = mod(glob_theta,2*pi);
-                nxt_x = pathX(point+1); 
-                nxt_y = pathY(point+1);
-                dx = nxt_x - glob_x;
-                dy = nxt_y - glob_y;
-                d_theta = mod(atan2(dy,dx),2*pi);
-                turn_angle = d_theta - cur_angle;
-                fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);  
-                
-                if (abs(turn_angle) < threshold)
-                    state = 'move';  
-                else
-                    turnAngle(port,ANGLE_VEL,TURN);                    
-                end                
+                    if (abs(turn_angle) < THRESHOLD)
+                        state = 'move';                                      
+                    else
+                        turnAngle(port,ANGLE_VEL,turn_angle);                    
+                    end
+                end               
                 
             % Move to the next point
             case 'move'
-
-                if (point+1 == final)
-                    state = 'final';
-
-                elseif (BumpRight || BumpLeft || BumpFront)
+                
+                if (BumpRight || BumpLeft || BumpFront)
                     fprintf('BUMP');
                 else
                 
@@ -179,10 +135,9 @@ function hw4_Team1_Gabe(serPort)
                 
             % Final State
             case 'final'
+                fprintf('DONE');
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 return;
-                
-                
         end
         
     end
