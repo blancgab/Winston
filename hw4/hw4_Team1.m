@@ -14,6 +14,16 @@ function hw4_Team1(serPort)
     
     % The function then turns and moves to each of those points, one at a
     % time until it reaches the final point, terminating gracefully.
+    
+    %  ============ NOTE! ============
+    % 
+    %  When the Python script is run, it 
+    %  prints out the Visibility graph first.
+    %  In order to run the rest of the Matlab
+    %  function, you have to close the window
+    %  with the visibility graph.
+    %
+    %  ============ NOTE! ============
 
 
     global port;    
@@ -22,8 +32,8 @@ function hw4_Team1(serPort)
     %% Generate Path
 
     clc;
-    % system('python path_finder.py input3');
-    outputFileID = fopen('output_test');
+    system('python path_finder.py input');
+    outputFileID = fopen('output');
     A = textscan(outputFileID, '%f %f');
     fclose(outputFileID);
     
@@ -159,10 +169,8 @@ function hw4_Team1(serPort)
         end
         
     end
-    
-end
 
-%% Wall Following Function, copied directly from the TA Solution
+% Wall Following Function, copied directly from the TA Solution
 % Wall follow functionality is not as accurate in practice as in the
 % simulation.
 function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
