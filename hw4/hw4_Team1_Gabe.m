@@ -40,23 +40,19 @@ function hw4_Team1_Gabe()
         [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
         Wall    = WallSensorReadRoomba(port);                % Poll for Wall Sensor
         d_dist  = DistanceSensorRoomba(port);                % Poll for Distance delta
-        d_theta = AngleSensorRoomba(port);     
+        d_theta = AngleSensorRoomba(port);                   % Poll for Angle delta
         
-        % Save previous x,y,theta values
+        % Keep tracking the position and angle before the first hit
         prev_glob_x = glob_x;
         prev_glob_y = glob_y;
         prev_glob_theta = glob_theta;
         
-        % Calculate new ones
         glob_theta = glob_theta + d_theta;
         glob_x     = glob_x - sin(glob_theta) * d_dist;
-        glob_y     = glob_y + cos(glob_theta) * d_dist;  
+        glob_y     = glob_y + cos(glob_theta) * d_dist;                      
+
         
-        state = 'start';
-        point = 1;
-        final = length(pathX);
-        
-        %% Plotting Data
+        %% Plotting function
         
         X = [X,glob_x];
         Y = [Y,glob_y];
@@ -70,7 +66,7 @@ function hw4_Team1_Gabe()
         grid;
         axis square;
         
-        drawnow;
+        drawnow; 
         
         %% State
               
@@ -78,12 +74,14 @@ function hw4_Team1_Gabe()
             
             % Turn towards next point
             case 'turn'
-                
+                if (point == final)
+                    state = 'final'
+                end
                 
                 
                 
             case 'move'
-                if (point = final)
+                if (point == final)
                 end
 
             % Fail State: M-Line is unreachable    
