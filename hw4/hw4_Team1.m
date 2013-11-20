@@ -5,8 +5,17 @@
 % Sophie Chou - sbc2125
 
 %%
-function hw4_Team1_Gabe(serPort)
+function hw4_Team1(serPort)
+    % Given a input file 'input3' of a room with obstacles, our function
+    % runs a python script that expands all of the obstacles, finds their
+    % convex hull and then runs Djikstra's algorithm to find the shortest
+    % path. It then outputs that path as a series of points in an output
+    % file, which this Matlab function reads.
     
+    % The function then turns and moves to each of those points, one at a
+    % time until it reaches the final point, terminating gracefully.
+
+
     global port;    
     port = serPort;
 
@@ -109,7 +118,7 @@ function hw4_Team1_Gabe(serPort)
             case 'move'
                 
                 if (BumpRight || BumpLeft || BumpFront)
-                    state = 'bump';
+                    fprintf('BUMP\n');
                 else
                 
                     % Travel along path (angle has been preset) to next point
@@ -126,11 +135,6 @@ function hw4_Team1_Gabe(serPort)
                     end
                     
                 end
-            
-            case 'bump'
-                
-                fprintf('BUMP');
-
                 
             % Fail State    
             case 'failure'
@@ -140,7 +144,7 @@ function hw4_Team1_Gabe(serPort)
                 
             % Final State
             case 'final'
-                fprintf('DONE');
+                fprintf('DONE\n');
                 SetFwdVelAngVelCreate(port, 0, 0 );
                 return;
         end
