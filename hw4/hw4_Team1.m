@@ -112,12 +112,12 @@ function hw4_Team1_Gabe(serPort)
                     state = 'bump';
                 else
                 
-                    %travel along path (angle has been preset) to next point
+                    % Travel along path (angle has been preset) to next point
                     next_x = pathX(point + 1);
                     next_y = pathY(point + 1);
 
-                    if(glob_x >= next_x) %if we've moved enough
-                        point = point + 1; %go to next point
+                    if(glob_x >= next_x)     % If we've moved enough
+                        point = point + 1;   % Go to next point
                     
                         state = 'turn';
                     else
