@@ -118,7 +118,7 @@ function hw4_Team1_Gabe(serPort)
                 else
                     SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
                     state = 'move'
-
+                end
             % Fail State: M-Line is unreachable    
             case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
