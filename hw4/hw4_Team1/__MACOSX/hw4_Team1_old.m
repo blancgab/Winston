@@ -32,14 +32,13 @@ function hw4_Team1(serPort)
     %% Generate Path
 
     clc;
-%     system('python path_finder.py input');
+    system('python path_finder.py input');
     outputFileID = fopen('output');
     A = textscan(outputFileID, '%f %f');
     fclose(outputFileID);
     
     pathX = cell2mat(A(1));
-    inv_pathY = cell2mat(A(2));
-    pathY = -1*inv_pathY;
+    pathY = cell2mat(A(2));
 
     for i = 1:length(pathX),
         fprintf('(%.2f, %.2f)\n',pathX(i), pathY(i));
@@ -49,12 +48,10 @@ function hw4_Team1(serPort)
     
     glob_x = pathX(1);
     glob_y = pathY(1);
-    glob_theta = 0;
-    
+    glob_theta = 0; 
     FWD_VEL = 0.2;
     ANGLE_VEL = 0.1;
-    THRESHOLD = .05;
-    TURN_DEGREE = 2;
+    THRESHOLD = .04;
 
     X = pathX(1);
     Y = pathY(1);
@@ -119,22 +116,12 @@ function hw4_Team1(serPort)
                     turn_angle = d_theta - cur_angle;
                 
                     fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);
-
-%                   CODE THAT I'M TRYING OUT
-%                     if (abs(turn_angle) < THRESHOLD)
-%                         state = 'move';                                      
-%                     else
-%                         turnAngle(port,ANGLE_VEL,turn_angle);                    
-%                     end
-
+                
                     if (abs(turn_angle) < THRESHOLD)
                         state = 'move';                                      
-                    elseif (turn_angle > 0)
-                        turnAngle(port,ANGLE_VEL,TURN_DEGREE);
                     else
-                        turnAngle(port,ANGLE_VEL,-TURN_DEGREE);                        
+                        turnAngle(port,ANGLE_VEL,turn_angle);                    
                     end
-
                 end               
                 
             % Move to the next point
@@ -142,19 +129,21 @@ function hw4_Team1(serPort)
                 
                 if (BumpRight || BumpLeft || BumpFront)
                     fprintf('BUMP\n');
-                end
-                
-                % Travel along path (angle has been preset) to next point
-                next_x = pathX(point + 1);
-                next_y = pathY(point + 1);
-
-                if(glob_x >= next_x)     % If we've moved enough
-                    point = point + 1;   % Go to next point
-                    
-                    state = 'turn';
                 else
-                    SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
-                    state = 'move';
+                
+                    % Travel along path (angle has been preset) to next point
+                    next_x = pathX(point + 1);
+                    next_y = pathY(point + 1);
+
+                    if(glob_x >= next_x)     % If we've moved enough
+                        point = point + 1;   % Go to next point
+                    
+                        state = 'turn';
+                    else
+                        SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
+                        state = 'move';
+                    end
+                    
                 end
                 
             % Fail State    
@@ -171,43 +160,5 @@ function hw4_Team1(serPort)
         end
         
     end
-
-% Wall Following Function, copied directly from the TA Solution
-% Wall follow functionality is not as accurate in practice as in the
-% simulation.
-function WallFollow(velocity, angular_vel, BumpLeft, BumpFront, BumpRight, Wall)
-
-    global port;
-
-    % Angle Velocity for different bumps
-    w_bumpleft  =  2 * angular_vel;
-    w_bumpfront =  3 * angular_vel;
-    w_bumpright =  4 * angular_vel;
-    w_nowall    = -4 * angular_vel;
-    
-    
-    if BumpLeft || BumpFront || BumpRight
-        v = 0;                              % Set Velocity to 0
-    elseif ~Wall
-        v = 0.25 * velocity;                % Set Velocity to 1/4 of the default
-    else
-        v = velocity;                       % Set Velocity to the default
-    end
-
-    
-    if BumpLeft
-        w = w_bumpleft;                   % Set Angular Velocity to w_bumpleft
-    elseif BumpFront
-        w = w_bumpfront;                  % Set Angular Velocity to w_bumpfront
-    elseif BumpRight
-        w = w_bumpright;                  % Set Angular Velocity to w_bumpright
-    elseif ~Wall
-        w = w_nowall;                     % Set Angular Velocity to w_nowall
-    else
-        w = 0;                            % Set Angular Velocity to 0
-    end
-    
-    SetFwdVelAngVelCreate(port, v, w);
     
 end
-
