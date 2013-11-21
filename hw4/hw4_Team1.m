@@ -32,13 +32,14 @@ function hw4_Team1(serPort)
     %% Generate Path
 
     clc;
-    system('python path_finder.py input');
+%     system('python path_finder.py input');
     outputFileID = fopen('output');
     A = textscan(outputFileID, '%f %f');
     fclose(outputFileID);
     
     pathX = cell2mat(A(1));
-    pathY = cell2mat(A(2));
+    inv_pathY = cell2mat(A(2));
+    pathY = -1*inv_pathY;
 
     for i = 1:length(pathX),
         fprintf('(%.2f, %.2f)\n',pathX(i), pathY(i));
@@ -48,10 +49,12 @@ function hw4_Team1(serPort)
     
     glob_x = pathX(1);
     glob_y = pathY(1);
-    glob_theta = 0; 
+    glob_theta = 0;
+    
     FWD_VEL = 0.2;
     ANGLE_VEL = 0.1;
-    THRESHOLD = .04;
+    THRESHOLD = .05;
+    TURN_DEGREE = 2;
 
     X = pathX(1);
     Y = pathY(1);
@@ -116,12 +119,22 @@ function hw4_Team1(serPort)
                     turn_angle = d_theta - cur_angle;
                 
                     fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);
-                
+
+%                   CODE THAT I'M TRYING OUT
+%                     if (abs(turn_angle) < THRESHOLD)
+%                         state = 'move';                                      
+%                     else
+%                         turnAngle(port,ANGLE_VEL,turn_angle);                    
+%                     end
+
                     if (abs(turn_angle) < THRESHOLD)
                         state = 'move';                                      
+                    elseif (turn_angle > 0)
+                        turnAngle(port,ANGLE_VEL,TURN_DEGREE);
                     else
-                        turnAngle(port,ANGLE_VEL,turn_angle);                    
+                        turnAngle(port,ANGLE_VEL,-TURN_DEGREE);                        
                     end
+
                 end               
                 
             % Move to the next point
@@ -129,22 +142,21 @@ function hw4_Team1(serPort)
                 
                 if (BumpRight || BumpLeft || BumpFront)
                     fprintf('BUMP\n');
-                else
-                
-                    % Travel along path (angle has been preset) to next point
-                    next_x = pathX(point + 1);
-                    next_y = pathY(point + 1);
-
-                    if(glob_x >= next_x)     % If we've moved enough
-                        point = point + 1;   % Go to next point
-                    
-                        state = 'turn';
-                    else
-                        SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
-                        state = 'move';
-                    end
-                    
                 end
+                
+                % Travel along path (angle has been preset) to next point
+                next_x = pathX(point + 1);
+                next_y = pathY(point + 1);
+
+                if(glob_x >= next_x)     % If we've moved enough
+                    point = point + 1;   % Go to next point
+                    
+                    state = 'turn';
+                else
+                    SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
+                    state = 'move';
+                end
+                    
                 
             % Fail State    
             case 'failure'
