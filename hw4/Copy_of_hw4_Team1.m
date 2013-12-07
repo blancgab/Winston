@@ -39,7 +39,7 @@ function hw4_Team1(serPort)
     
     pathX = cell2mat(A(1));
     inv_pathY = cell2mat(A(2));
-    pathY = -1.5*inv_pathY;
+    pathY = -1*inv_pathY;
 
     for i = 1:length(pathX),
         fprintf('(%.2f, %.2f)\n',pathX(i), pathY(i));
@@ -51,7 +51,7 @@ function hw4_Team1(serPort)
     glob_y = pathY(1);
     glob_theta = 0;
     
-    FWD_VEL = 0.2;
+    FWD_VEL = 0.25;
     ANGLE_VEL = 0.1;
     THRESHOLD = .05;
     TURN_DEGREE = 2;

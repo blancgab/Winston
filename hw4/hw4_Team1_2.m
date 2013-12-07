@@ -51,7 +51,7 @@ function hw4_Team1(serPort)
     glob_y = pathY(1);
     glob_theta = 0;
     
-    FWD_VEL = 0.25;
+    FWD_VEL = 0.2;
     ANGLE_VEL = 0.1;
     THRESHOLD = .05;
     TURN_DEGREE = 2;
@@ -114,26 +114,10 @@ function hw4_Team1(serPort)
                     dx = nxt_x - glob_x;
                     dy = nxt_y - glob_y;
                     d_theta = mod(atan2(dy,dx)+pi,2*pi)-pi;
-                
-                    % Difference between current angle & next angle
-                    turn_angle = d_theta - cur_angle;
-                
-                    fprintf('turn: t = %.2f; d = %.2f; c = %.2f;\n',turn_angle, d_theta, cur_angle);
-
-%                   CODE THAT I'M TRYING OUT
-%                     if (abs(turn_angle) < THRESHOLD)
-%                         state = 'move';                                      
-%                     else
-%                         turnAngle(port,ANGLE_VEL,turn_angle);                    
-%                     end
-
-                    if (abs(turn_angle) < THRESHOLD)
-                        state = 'move';                                      
-                    elseif (turn_angle > 0)
-                        turnAngle(port,ANGLE_VEL,TURN_DEGREE);
-                    else
-                        turnAngle(port,ANGLE_VEL,-TURN_DEGREE);                        
-                    end
+                    
+                    d_angle = d_theta*(180/pi)
+                    
+                    TurnAngle(port,ANGLE_VEL)
 
                 end               
                 
@@ -148,6 +132,12 @@ function hw4_Team1(serPort)
                 next_x = pathX(point + 1);
                 next_y = pathY(point + 1);
 
+                d = sqrt(next_x^2+ next_y^2);
+                
+                travelDist(d);
+                
+                state = 'turn';                
+                
                 
                 if(glob_x >= next_x)     % If we've moved enough
                     point = point + 1;   % Go to next point

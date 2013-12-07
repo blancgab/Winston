@@ -30,7 +30,7 @@ class ObstacleGraph:
 	Graphs a room and a bunch of objects in a GUI!
 	"""
 	def __init__(self, obstacle_file):
-		self.width = 1200
+		self.width = 1000
 		self.exp_obstacles = []
 
 		self.root = Tk()
@@ -154,8 +154,8 @@ class ObstacleGraph:
 		for obstacle in self.obstacles[1:]:
 			self.draw_obstacle(obstacle, 'black')
 		
-		# for edge in self.edges:
-		# 	self.draw_line(edge)
+		for edge in self.edges:
+			self.draw_line(edge)
 
 		# import pdb; pdb.set_trace()
 		for edge in self.best_path:
