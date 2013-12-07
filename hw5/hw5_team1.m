@@ -13,6 +13,4 @@ function hw5()
     
     [y x] = getpts(1);
     
-    
-    
 end
