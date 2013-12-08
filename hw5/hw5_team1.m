@@ -33,26 +33,17 @@ function hw5()
         
         
         figure(1);
-        imshow(image);
-        
-        figure(2);
-        imshow(pixel_mask);
+        subplot(1,2,1);
+        p1 = imshow(image);
+
+        subplot(1,2,2);
+        p2 = imshow(pixel_mask);
         rectangle('Position',box, 'EdgeColor', 'r')
         rectangle('Position',[x,y,5,5],'FaceColor','g', 'Curvature',1)
     end
 end
 
 function pixel_mask = create_mask(image, rgb)
-%     r = sum(rgb(:,1))/length(rgb)
-%     g = sum(rgb(:,2))/length(rgb)
-%     b = sum(rgb(:,3))/length(rgb)
-%     
-%     % Color Threshold
-%     ct = 25;
-%     
-%     pixel_mask = (r-ct) < image (:,:,1) & image(:,:,1) < (r+ct) & ...
-%                  (g-ct) < image (:,:,2) & image(:,:,2) < (g+ct) & ...
-%                  (b-ct) < image (:,:,3) & image(:,:,3) < (b+ct);
 
     max_r = max(rgb(:,1));
     max_g = max(rgb(:,2));
