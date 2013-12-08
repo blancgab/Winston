@@ -1,9 +1,6 @@
 function hw5()
-    
-    global image;
-
     % Reading your image
-    image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=32&rate=0');
+    image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
     
     resolution = size(image); 
 	resolution = resolution(1:2);
@@ -11,46 +8,64 @@ function hw5()
     figure(1);
     imshow(image);
     
-    P = getpts(1);
+    [c, r] = getpts(1);
     
-    sumr = 0;
-    sumb = 0;
-    sumg = 0;
-    
-    for i = P
-       
-        C = getColor(uint64(i(1)), uint64(i(2)), image);
+    rgb = impixel(image, c, r);    
+    while(1)
+        image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+        pixel_mask = create_mask(image, rgb);
+%         pixel_mask = imfill(pixel_mask, 'holes');
+        blobMeasurements = regionprops(pixel_mask, 'Area', 'BoundingBox', 'Centroid');
         
-        C(1)
-        C(2)
-        C(3)
+        largest = 0;
+        index = 0;
+        for i = 1:size(blobMeasurements,1)
+            if (blobMeasurements(i).Area>largest)
+                largest = blobMeasurements(i).Area;
+                index = i;
+            end
+        end
+        box = blobMeasurements(index).BoundingBox;
+        center = blobMeasurements(index).Centroid
+        area = blobMeasurements(index).Area
+        x = center(1);
+        y = center(2);
         
-        sumr = sumr + C(1);
-        sumg = sumg + C(2);
-        sumb = sumb + C(3);
         
+        figure(1);
+        imshow(image);
+        
+        figure(2);
+        imshow(pixel_mask);
+        rectangle('Position',box, 'EdgeColor', 'r')
+        rectangle('Position',[x,y,5,5],'FaceColor','g', 'Curvature',1)
     end
+end
+
+function pixel_mask = create_mask(image, rgb)
+%     r = sum(rgb(:,1))/length(rgb)
+%     g = sum(rgb(:,2))/length(rgb)
+%     b = sum(rgb(:,3))/length(rgb)
+%     
+%     % Color Threshold
+%     ct = 25;
+%     
+%     pixel_mask = (r-ct) < image (:,:,1) & image(:,:,1) < (r+ct) & ...
+%                  (g-ct) < image (:,:,2) & image(:,:,2) < (g+ct) & ...
+%                  (b-ct) < image (:,:,3) & image(:,:,3) < (b+ct);
+
+    max_r = max(rgb(:,1));
+    max_g = max(rgb(:,2));
+    max_b = max(rgb(:,3));
     
-    sumr;
-    sumg;
-    sumb;
-    
-    r = sumr/length(P)
-    g = sumg/length(P)
-    b = sumb/length(P)
-    
+    min_r = min(rgb(:,1));
+    min_g = min(rgb(:,2));
+    min_b = min(rgb(:,3));
     
     % Color Threshold
-    ct = 75;
+    ct = 5;
     
-    
-    
-    pixel_mask = (r-ct) < image (:,:,1) & image(:,:,1) < (r+ct) & ...
-                 (g-ct) < image (:,:,2) & image(:,:,2) < (g+ct) & ...
-                 (b-ct) < image (:,:,3) & image(:,:,3) < (b+ct);
-
-
-    imshow(pixel_mask);
-
-    
+    pixel_mask = min_r-ct < image (:,:,1) & image(:,:,1) < max_r+ct & ...
+                 min_g-ct < image (:,:,2) & image(:,:,2) < max_g+ct & ...
+                 min_b-ct < image (:,:,3) & image(:,:,3) < max_b+ct;
 end
