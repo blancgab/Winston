@@ -12,7 +12,7 @@ function hw5()
     
     rgb = impixel(image, c, r);    
     while(1)
-        image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+        image = imread('http://192.168.1.102/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
         pixel_mask = create_mask(image, rgb);
         blobMeasurements = regionprops(pixel_mask, 'Area', 'BoundingBox', 'Centroid');
         
