@@ -1,6 +1,6 @@
 function hw5()
     % Reading your image
-    image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+    image = imread('http://192.168.1.102/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
     
     resolution = size(image); 
 	resolution = resolution(1:2);
@@ -14,7 +14,6 @@ function hw5()
     while(1)
         image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
         pixel_mask = create_mask(image, rgb);
-%         pixel_mask = imfill(pixel_mask, 'holes');
         blobMeasurements = regionprops(pixel_mask, 'Area', 'BoundingBox', 'Centroid');
         
         largest = 0;
@@ -31,13 +30,9 @@ function hw5()
         x = center(1);
         y = center(2);
         
-        
         figure(1);
-        subplot(1,2,1);
-        p1 = imshow(image);
-
-        subplot(1,2,2);
-        p2 = imshow(pixel_mask);
+        subplot(1,2,1); imshow(image);
+        subplot(1,2,2); imshow(pixel_mask);
         rectangle('Position',box, 'EdgeColor', 'r')
         rectangle('Position',[x,y,5,5],'FaceColor','g', 'Curvature',1)
     end
