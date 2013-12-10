@@ -22,12 +22,16 @@ function hallway_follow(serPort, local_ip)
     ANGLE_VEL = 0.15;
     STEP = 10;        
 
+    % Hue MIN/MAX
+    H = [.55 .7];
+    
+    % Sat MIN/MAX
+    S = [.07 .34];
+    
     HEIGHT = resolution(1);
     WIDTH  = resolution(2);
     CENTER = WIDTH/2;
-          
-    HUE = 240;
-    
+              
     state = 'hallway_follow';
     SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
     
@@ -36,26 +40,30 @@ function hallway_follow(serPort, local_ip)
         
         image = imread(cam_ip);
        
-        %% Calculate Brightness
-                
+        %% HSV Color Detection
+
+        % Hue MIN/MAX
+        H = [.55 .7];
+    
+        % Sat MIN/MAX
+        S = [.07 .34];
+        
+        hsv = rgb2hsv(image);
+        hue = hsv(:,:,1);
+        sat = hsv(:,:,2);    
+        val = hsv(:,:,3);            
+        
+        sv = (sat >= S(1)) & (sat <= S(2)) & ...
+             (val >= .1) & (val <= 1);
+             
+        blue = ((hue > H(1))&(hue <= H(2)))&(sv) ;         
+        
+        %% Calculate Brightness    
+        
         brightness = 230;
         pixel_mask = brightness < image (:,:,1) & ...
                      brightness < image (:,:,2) & ...
                      brightness < image (:,:,3);
-
-        S = [MIN_S MAX_S];
-        V = [MIN_V MAX_V];                 
-                 
-        hsv = rgb2hsv(image);
-        hue = round(hsv(:,:,1)*360);
-        
-        sv = (sat >= S(1)) & (sat <= S(2)) & ...
-             (val >= V(1)) & (val <= V(2));        
-        
-        blue = ((hue > HUE-30)&(hue <= HUE+30))&(sv);
-        
-        S = [.1 1];
-        V = [.1 1];
                  
         Q = floor(WIDTH/STEP);
         
