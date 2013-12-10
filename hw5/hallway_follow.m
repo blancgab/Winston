@@ -1,4 +1,4 @@
-function hallway_follow(local_ip)
+function hallway_follow(local_ip, serPort, velocity, epsilon)
 
     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
 
@@ -27,11 +27,11 @@ function hallway_follow(local_ip)
         y_br_line = [0 resolution(1)];    
 
         %% Path Finding (SOPHIE'S CODE)
-        
-        %   path
-        %   path
-        %   path
-        %   path
+        offset = (resolution(2) / 2) - index %how far off is the max index from midpoint?
+
+        if(abs(offset) <= epsilon)
+            turnAngle(serPort, velocity, 10)
+        end
 
         
         %%

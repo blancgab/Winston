@@ -1,10 +1,11 @@
 function light_follow()
 
-    image = imread('hallway_image.jpg')
+    image = imread('hallway_image.jpg');
 
     % Reading your image
     resolution = size(image); 
-	resolution = resolution(1:2)
+	resolution = resolution(1:2);
+    %res(1) is y res(2) is x
 
     subplot(1,2,1); imshow(image);
     
@@ -27,39 +28,20 @@ function light_follow()
     subplot(1,2,2); imshow(pixel_mask);
     hold on; plot(x_br_line,y_br_line);
     
+
+    [m, index]  = max(avg_bright); %check that m is certain value, else
+
+
+    x_br_line = [index index]; 
+    y_br_line = [0 resolution(1)];  %draw from bottom to top  
     
-    
-%     light_regions = regionprops(pixel_mask, 'Area', 'Centroid');
-%     
-%     num_of_pts = length(light_regions);
-%     
-%     X = zeros(1,num_of_pts);
-%     Y = zeros(1,num_of_pts); 
-%     
-%     for i = 1:num_of_pts
-%                 
-%         if (light_regions(i).Area > 10)
-%         
-%             p = light_regions(i).Centroid;
-%         
-%             X(i) = p(1);
-%             Y(i) = p(2);
-%         end
-%         
-%     end
-%     
-%     % Remove Zero Values
-%     X=X(X~=0);
-%     Y=Y(Y~=0);
-%     
-%     X_avg = mean2(X);
-%     
-%     avg_line_x = [X_avg X_avg]
-%     avg_line_y = [min(Y) max(Y)]
-%     
-%     figure(2); 
-%     scatter(X,Y); hold on;
-%     
-%     plot(avg_line_x,avg_line_y);
+    figure(2); 
+    imshow(image);hold on;
+    plot(x_br_line,y_br_line);
+
 
 end
+
+
+
+%how much to move and in which dir
