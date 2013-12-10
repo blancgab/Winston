@@ -14,20 +14,18 @@ function light_follow()
                  brightness < image (:,:,2) & ...
                  brightness < image (:,:,3);
     
-    figure(1);
-    subplot(1,2,1); imshow(image);             
-    subplot(1,2,2); imshow(pixel_mask);
         
     avg_bright = mean(pixel_mask);
     
     [m, index]  = max(avg_bright);
         
     x_br_line = [index index];
-    y_br_line = [0 resolution(1)];    
+    y_br_line = [0 resolution(1)];   
     
-    figure(2); 
-    imshow(image);hold on;
-    plot(x_br_line,y_br_line);
+    figure(1);
+    subplot(1,2,1); imshow(image);             
+    subplot(1,2,2); imshow(pixel_mask);
+    hold on; plot(x_br_line,y_br_line);
     
     
     
