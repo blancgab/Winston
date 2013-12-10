@@ -14,8 +14,6 @@ function hw5(serPort)
     resolution = size(image); 
 	resolution = resolution(1:2);
     center = resolution(2)/2;
-    left_bound = center - 0.1*center;
-    right_bound = center + 0.1*center;
 
     figure(1);
     imshow(image);
@@ -45,37 +43,15 @@ function hw5(serPort)
             fprintf('Cant find object\n');
             continue;
         end
-        
-        
-        %movement stuff
-%         if (x < .8*center) && (prev_x < .8*center)
-%             fprintf('Turn left\n');
-%             turnAngle(port,ANGLE_VEL,TURN_DEGREE);
-%             continue;
-%         elseif (x > 1.2*center) && (prev_x > 1.2*center)
-%             fprintf('Turn right\n');
-%             turnAngle(port,ANGLE_VEL,-TURN_DEGREE);
-%             continue;
-%         end
-%         
-%         if (area < goal_area*.8) && (prev_area < goal_area*.8)
-%             fprintf('Move forward\n');
-%             travelDist(port, FWD_VEL, FWD_DIST);
-%         elseif (area > goal_area*1.2) && (prev_area > goal_area *1.2)
-%             fprintf('Move backward\n');
-%             travelDist(port, FWD_VEL, -FWD_DIST);
-%         end
-%       
+         
         
         if (x > .8*center) && (x < 1.2*center)
             turn = 0;
         elseif (x < .8*center) && (prev_x < .8*center)
             fprintf('Turn left\n');
-%             turnAngle(port,ANGLE_VEL,TURN_DEGREE);
             turn = ANGLE_VEL;
         elseif (x > 1.2*center) && (prev_x > 1.2*center)
             fprintf('Turn right\n');
-%             turnAngle(port,ANGLE_VEL,-TURN_DEGREE);
             turn = -ANGLE_VEL;
         end
         
@@ -83,11 +59,9 @@ function hw5(serPort)
             speed = 0;
         elseif (area < goal_area*.8) && (prev_area < goal_area*.8)
             fprintf('Move forward\n');
-%             travelDist(port, FWD_VEL, FWD_DIST);
             speed = FWD_VEL;
         elseif (area > goal_area*1.2) && (prev_area > goal_area *1.2)
             fprintf('Move backward\n');
-%             travelDist(port, FWD_VEL, -FWD_DIST);
             speed = -FWD_VEL;
         end
         

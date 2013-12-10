@@ -27,6 +27,7 @@ function hallway_follow(serPort, local_ip)
     CENTER = WIDTH/2;
           
     state = 'hallway_follow';
+    SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
     
     %% Running
     while(1)
@@ -71,6 +72,9 @@ function hallway_follow(serPort, local_ip)
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
+        [BumpRight, BumpLeft, ~, ~, ~, BumpFront] = BumpsWheelDropsSensorsRoomba(port);
+
+        
         bump = BumpLeft || BumpFront || BumpRight;
 
         if bump
@@ -82,7 +86,6 @@ function hallway_follow(serPort, local_ip)
         subplot(1,2,1); imshow(image);             
         subplot(1,2,2); imshow(pixel_mask);
         hold on; plot(x_br_line,y_br_line);
-        plot(x_en_line,y_en_line,'r');
         drawnow;
         
         %% State
