@@ -21,6 +21,8 @@ function hallway_follow(serPort, local_ip)
     CENTER    = resolution(2)/2;
     EPSILON   = 30;
     TOLERANCE = 200;
+    HEIGHT    = resolution(2);
+    WIDTH     = resolution(1)
           
     state = 'find_hallway';
     
@@ -71,7 +73,7 @@ function hallway_follow(serPort, local_ip)
                 
                 
                 if(max_brightness > TOLERANCE)
-                    fprintf('found lights\n');  
+                    fprintf('found hallway\n');  
                     state = 'hallway_follow';
                 end
                 
@@ -79,7 +81,7 @@ function hallway_follow(serPort, local_ip)
                                 
                 if (max_brightness < TOLERANCE)
                     
-                    fprintf('cannot find lights\n'); 
+                    fprintf('cannot find hallway\n'); 
                     state = 'find_hallway';
                 elseif (found_door)
                     
