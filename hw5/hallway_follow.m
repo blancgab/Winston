@@ -101,12 +101,12 @@ function hallway_follow(serPort, local_ip)
                     
                 else
                    
-                    if (x > .8*CENTER) && (x < 1.2*CENTER)
+                    if (br > .8*CENTER) && (br < 1.2*CENTER)
                         turn = 0;
-                    elseif (x < .8*CENTER)
+                    elseif (br < .8*CENTER)
                         fprintf('Turning left\n');
                         turn = ANGLE_VEL;
-                    elseif (x > 1.2*center)
+                    elseif (br > 1.2*CENTER)
                         fprintf('Turning right\n');
                         turn = -ANGLE_VEL;
                     end
@@ -123,7 +123,13 @@ function hallway_follow(serPort, local_ip)
                 
             case 'knock'
                 
-                % reverse, wait then go forward
+                SetFwdVelAngVelCreate(port, -FWD_VEL, 0);
+                
+                pause(1);
+                
+                SetFwdVelAngVelCreate(port, FWD_VEL/2, 0);
+                
+                pause(3);
                 
                 state = 'final';
                 
