@@ -47,20 +47,24 @@ function hw5(serPort)
         
         if (x > .8*center) && (x < 1.2*center)
             turn = 0;
-        elseif (x < .8*center) && (prev_x < .8*center)
+        elseif (x < .8*center) 
+%             && (prev_x < .8*center)
             fprintf('Turn left\n');
             turn = ANGLE_VEL;
-        elseif (x > 1.2*center) && (prev_x > 1.2*center)
+        elseif (x > 1.2*center) 
+%             && (prev_x > 1.2*center)
             fprintf('Turn right\n');
             turn = -ANGLE_VEL;
         end
         
         if (area > goal_area*.8) && (area < goal_area*1.2)
             speed = 0;
-        elseif (area < goal_area*.8) && (prev_area < goal_area*.8)
+        elseif (area < goal_area*.8) 
+%             && (prev_area < goal_area*.8)
             fprintf('Move forward\n');
             speed = FWD_VEL;
-        elseif (area > goal_area*1.2) && (prev_area > goal_area *1.2)
+        elseif (area > goal_area*1.2) 
+%             && (prev_area > goal_area *1.2)
             fprintf('Move backward\n');
             speed = -FWD_VEL;
         end
