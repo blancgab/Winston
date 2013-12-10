@@ -1,40 +1,99 @@
-function hw5()
+function hw5(serPort)
+
+    global port;    
+    port = serPort;
+    FWD_VEL = 0.1;
+    FWD_DIST = 0.01;
+    ANGLE_VEL = 0.03;
+    TURN_DEGREE = 1;
+
     % Reading your image
-    image = imread('http://192.168.1.102/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+%     image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+    image = imread('http://192.168.1.101/img/snapshot.cgi?');
     
     resolution = size(image); 
 	resolution = resolution(1:2);
+    center = resolution(2)/2;
+    left_bound = center - 0.1*center;
+    right_bound = center + 0.1*center;
 
     figure(1);
     imshow(image);
     
     [c, r] = getpts(1);
     
-    rgb = impixel(image, c, r);    
+    rgb = impixel(image, c, r); 
+    pixel_mask = create_mask(image, rgb);
+    [~, ~, area, ~] = find_largest_blob(pixel_mask);
+    goal_area = area
+    prev_area = area;
+    prev_x = center;
+    
     while(1)
-        image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+%         image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+        image = imread('http://192.168.1.101/img/snapshot.cgi?');
         pixel_mask = create_mask(image, rgb);
-        blobMeasurements = regionprops(pixel_mask, 'Area', 'BoundingBox', 'Centroid');
-        
-        largest = 0;
-        index = 0;
-        for i = 1:size(blobMeasurements,1)
-            if (blobMeasurements(i).Area>largest)
-                largest = blobMeasurements(i).Area;
-                index = i;
-            end
-        end
-        box = blobMeasurements(index).BoundingBox;
-        center = blobMeasurements(index).Centroid
-        area = blobMeasurements(index).Area
-        x = center(1);
-        y = center(2);
-        
+        [x, y, area, box] = find_largest_blob(pixel_mask);
         figure(1);
-        subplot(1,2,1); imshow(image);
-        subplot(1,2,2); imshow(pixel_mask);
+        imshow(image);
+        figure(2);
+        imshow(pixel_mask);
+        
+        if (box == -1)
+            fprintf('Cant find object\n');
+            continue;
+        end
+        
+        %movement stuff
+        if (x < .8*center) && (prev_x < .8*center)
+            fprintf('Turn left\n');
+            turnAngle(port,ANGLE_VEL,TURN_DEGREE);
+            continue;
+        elseif (x > 1.2*center) && (prev_x > 1.2*center)
+            fprintf('Turn right\n');
+            turnAngle(port,ANGLE_VEL,-TURN_DEGREE);
+            continue;
+        end
+        
+        if (area < goal_area*.8) && (prev_area < goal_area*.8)
+            fprintf('Move forward\n');
+            travelDist(port, FWD_VEL, FWD_DIST);
+        elseif (area > goal_area*1.2) && (prev_area > goal_area *1.2)
+            fprintf('Move backward\n');
+            travelDist(port, FWD_VEL, -FWD_DIST);
+        end
+        
+        
+        prev_x = x;
+        prev_area = area;
         rectangle('Position',box, 'EdgeColor', 'r')
         rectangle('Position',[x,y,5,5],'FaceColor','g', 'Curvature',1)
+    end
+end
+
+function [center_x, center_y, area, box] = find_largest_blob(pixel_mask)
+    blobs = regionprops(pixel_mask, 'Area', 'BoundingBox', 'Centroid');
+
+    largest = 0;
+    index = 0;
+    for i = 1:size(blobs,1)
+        if (blobs(i).Area>largest)
+            largest = blobs(i).Area;
+            index = i;
+        end
+    end
+    largest
+    if (largest > 750)    
+        box = blobs(index).BoundingBox;
+        center = blobs(index).Centroid;
+        area = blobs(index).Area;
+        center_x = center(1);
+        center_y = center(2);
+    else
+        box = -1;
+        area = -1;
+        center_x = -1;
+        center_y = -1;
     end
 end
 
