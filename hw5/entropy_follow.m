@@ -14,11 +14,11 @@ function entropy_follow(step_size)
     pixel_mask = brightness < image (:,:,1) & ...
                  brightness < image (:,:,2) & ...
                  brightness < image (:,:,3);
-
-   
-    entropies = double.empty()
-    brights = double.empty()
-    xvals = double.empty()
+             
+    brights   = double.empty;
+    entropies = double.empty;
+    xvals     = double.empty;
+    
 
     for(x=1:step_size:(w-step_size))
         xvals = [xvals x]
@@ -37,9 +37,4 @@ function entropy_follow(step_size)
     plot(xvals, smooth(brights)); 
  
 
-
 end
-
-
-
-%how much to move and in which dir

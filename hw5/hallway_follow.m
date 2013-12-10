@@ -5,10 +5,12 @@ function hallway_follow(serPort, local_ip)
     port = serPort;
 
     %% Initialization
-%     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
-
-    cam_ip = 'hallway_image.jpg';
     
+%   cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0'];
+%   cam_ip = 'hallway_image.jpg';
+
+    cam_ip = ['http://192.168.1.',local_ip,'/img/snapshot.cgi?'];
+
     image = imread(cam_ip);    
     resolution = size(image); 
 	resolution = resolution(1:2);
@@ -49,18 +51,18 @@ function hallway_follow(serPort, local_ip)
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
-        bump = BumpLeft || BumpFront || BumpRight;
-        
-        if bump
-            fprintf('BUMP\n');
-        end
+%         bump = BumpLeft || BumpFront || BumpRight;
+%
+%         if bump
+%             fprintf('BUMP\n');
+%         end
         
         %% Plotting
 
-        figure(1);        
         subplot(1,2,1); imshow(image);             
         subplot(1,2,2); imshow(pixel_mask);
         hold on; plot(x_br_line,y_br_line);
+        drawnow;
         
         %% State
                       
@@ -88,18 +90,17 @@ function hallway_follow(serPort, local_ip)
                     state = 'door_follow';
                     
                 elseif (abs(center_offset) <= EPSILON)
-                        s = sign(center_offset);
+                    s = sign(center_offset);
                         
-                        if (s == 1)
-                            fprintf('turning counter-clockwise\n');
-                        else
-                            fprintf('turning clockwise\n');
-                        end
+                    if (s == 1)
+                        fprintf('turning counter-clockwise\n');
+                    else
+                        fprintf('turning clockwise\n');
+                    end
                         
-%                       turnAngle(port, FWD_VEL, 10*s)
+%                     turnAngle(port, FWD_VEL, 10*s)
                 end
                                 
-                
             case 'door_follow'
 
                 if bump
@@ -113,20 +114,16 @@ function hallway_follow(serPort, local_ip)
                 state = 'final';
                 
             case 'failure'
-                SetFwdVelAngVelCreate(port, 0, 0 );
+%                 SetFwdVelAngVelCreate(port, 0, 0 );
                 fprintf('ERROR: Unable to reach goal\n');
                 return;
                 
             case 'final'
                 fprintf('DONE\n');
-                SetFwdVelAngVelCreate(port, 0, 0 );
+%                 SetFwdVelAngVelCreate(port, 0, 0 );
                 return;
         end    
           
     end
     
-end
-
-function update_plot(h)
-    set(0,'CurrentFigure',h)
 end
