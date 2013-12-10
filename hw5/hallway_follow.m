@@ -5,6 +5,7 @@ function hallway_follow(serPort, local_ip)
     port = serPort;
 
     %% Initialization
+%     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0'];
 %     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
 
     cam_ip = 'hallway_image.jpg';
