@@ -6,8 +6,10 @@ function hallway_follow(local_ip)
     resolution = size(image); 
 	resolution = resolution(1:2);
     
-    fig1 = figure(1); drawnow;
+    figure(1); drawnow;
     subplot(1,2,1); imshow(image);
+    
+    state = 'start';
   
     while(1)
         
@@ -24,7 +26,14 @@ function hallway_follow(local_ip)
         [m, index]  = max(avg_bright);
 
         x_br_line = [index index];
-        y_br_line = [0 resolution(1)];    
+        y_br_line = [0 resolution(1)];   
+        
+        %% Plotting
+
+        figure(1);        
+        subplot(1,2,1); imshow(image);             
+        subplot(1,2,2); imshow(pixel_mask);
+        hold on; plot(x_br_line,y_br_line);          
 
         %% Path Finding (SOPHIE'S CODE)
         
@@ -34,15 +43,34 @@ function hallway_follow(local_ip)
         %   path
 
         
-        %%
-        
-        
-        %% Plotting
-
-        figure(1);        
-        subplot(1,2,1); imshow(image);             
-        subplot(1,2,2); imshow(pixel_mask);
-        hold on; plot(x_br_line,y_br_line);      
+        %% State
+                      
+        switch state
+            
+            case 'start'
+                            
+                
+            case 'hall_follow'
+                
+                
+            case 'lost'
+                
+            case 'door_follow'
+                
+                
+            case 'knock'
+                
+                
+            case 'failure'
+                SetFwdVelAngVelCreate(port, 0, 0 );
+                fprintf('ERROR: Unable to reach goal\n');
+                return;
+                
+            case 'final'
+                fprintf('DONE\n');
+                SetFwdVelAngVelCreate(port, 0, 0 );
+                return;
+        end    
           
     end
     
