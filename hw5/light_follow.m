@@ -1,4 +1,7 @@
-function light_follow(image)
+function light_follow()
+
+    image = imread('hallway_image.jpg')
+
     % Reading your image
     resolution = size(image); 
 	resolution = resolution(1:2)
@@ -17,14 +20,15 @@ function light_follow(image)
         
     avg_bright = mean(pixel_mask);
     
-    [m index]  = max(avg_bright);
+    [m, index]  = max(avg_bright);
         
-    x_bright = [index index];
-    y_bright = [0 resolution(1)];    
+    x_br_line = [index index];
+    y_br_line = [0 resolution(1)];    
     
     figure(2); 
     imshow(image);hold on;
-    plot(x_bright,y_bright);
+    plot(x_br_line,y_br_line);
+    
     
     
 %     light_regions = regionprops(pixel_mask, 'Area', 'Centroid');
@@ -57,9 +61,6 @@ function light_follow(image)
 %     
 %     figure(2); 
 %     scatter(X,Y); hold on;
-%     
-%     
-%     
 %     
 %     plot(avg_line_x,avg_line_y);
 
