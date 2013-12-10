@@ -21,12 +21,6 @@ function hallway_follow(serPort, local_ip)
     FWD_VEL   = 0.2;
     ANGLE_VEL = 0.15;
     STEP = 10;        
-
-    % Hue MIN/MAX
-    H = [.55 .7];
-    
-    % Sat MIN/MAX
-    S = [.07 .34];
     
     HEIGHT = resolution(1);
     WIDTH  = resolution(2);
@@ -83,7 +77,7 @@ function hallway_follow(serPort, local_ip)
         xvals   = xvals(1 : find(xvals,1,'last'));
         brights = brights(1 : find(brights,1,'last'));
 
-        [max_brightness, b_line] = max(brights);        
+        [~, b_line] = max(brights);        
         
         br = xvals(b_line)+STEP/2;
         
