@@ -5,10 +5,12 @@ function hallway_follow(serPort, local_ip)
     port = serPort;
 
     %% Initialization
-%     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
-
-    cam_ip = 'hallway_image.jpg';
     
+%   cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0'];
+%   cam_ip = 'hallway_image.jpg';
+
+    cam_ip = ['http://192.168.1.',local_ip,'/img/snapshot.cgi?'];
+
     image = imread(cam_ip);    
     resolution = size(image); 
 	resolution = resolution(1:2);
@@ -20,29 +22,52 @@ function hallway_follow(serPort, local_ip)
     TURN_VEL  = 0.15;
     EPSILON   = 30;
     TOLERANCE = 200;
+    STEP = 10;        
+
     HEIGHT    = resolution(1);
     WIDTH     = resolution(2);
           
-    state = 'find_hallway';
+    state = 'hallway_follow';
     
     %% Running
     while(1)
         
         image = imread(cam_ip);
        
-        %% Calculate Brightness Line
+        %% Calculate Brightness
+                
         brightness = 230;
         pixel_mask = brightness < image (:,:,1) & ...
                      brightness < image (:,:,2) & ...
                      brightness < image (:,:,3);
-
-        avg_bright = mean(pixel_mask);
         
-        [max_brightness, b_line]  = max(avg_bright);
-
-        x_br_line = [b_line b_line];
-        y_br_line = [0 resolution(1)];
+        STEP = 10;        
         
+        Q = floor(WIDTH/STEP);
+        
+        brights   = zeros(1,Q+1);
+        xvals     = zeros(1,Q+1);
+                
+        i = 1;
+        
+        for x=1:STEP:(WIDTH-STEP)
+            
+            xvals(i)     = x;
+            brights(i)   = mean2(pixel_mask(:, x:x + STEP));
+                        
+            i = i+1;
+        end      
+        
+        xvals   = xvals(1 : find(xvals,1,'last'));
+        brights = brights(1 : find(brights,1,'last'));
+
+        [max_brightness, b_line] = max(brights);        
+        
+        br = xvals(b_line)+STEP/2;
+        
+        x_br_line = [br br];
+        y_br_line = [0 HEIGHT];
+                
         %% Calculations
         
         center_offset = WIDTH/2 - b_line;
@@ -50,56 +75,42 @@ function hallway_follow(serPort, local_ip)
         found_door = false;
         
         bump = BumpLeft || BumpFront || BumpRight;
-        
+
         if bump
             fprintf('BUMP\n');
         end
         
         %% Plotting
 
-        figure(1);        
         subplot(1,2,1); imshow(image);             
         subplot(1,2,2); imshow(pixel_mask);
         hold on; plot(x_br_line,y_br_line);
+        plot(x_en_line,y_en_line,'r');
+        drawnow;
         
         %% State
                       
         switch state
-            
-            case 'find_hallway'
-                
-                fprintf('searching for hallway\n');  
-                
-                
-                if(max_brightness > TOLERANCE)
-                    fprintf('found hallway\n');  
-                    state = 'hallway_follow';
-                end
                 
             case 'hallway_follow'
                                 
-                if (max_brightness < TOLERANCE)
-                    
-                    fprintf('cannot find hallway\n'); 
-                    state = 'find_hallway';
-                elseif (found_door)
+                if (found_door)
                     
                     fprintf('found door, turning towards it\n');
                     state = 'door_follow';
                     
                 elseif (abs(center_offset) <= EPSILON)
-                        s = sign(center_offset);
+                    s = sign(center_offset);
                         
-                        if (s == 1)
-                            fprintf('turning counter-clockwise\n');
-                        else
-                            fprintf('turning clockwise\n');
-                        end
+                    if (s == 1)
+                        fprintf('turning counter-clockwise\n');
+                    else
+                        fprintf('turning clockwise\n');
+                    end
                         
-%                       turnAngle(port, FWD_VEL, 10*s)
+                    turnAngle(port, FWD_VEL, 5*s)
                 end
                                 
-                
             case 'door_follow'
 
                 if bump
@@ -125,8 +136,4 @@ function hallway_follow(serPort, local_ip)
           
     end
     
-end
-
-function update_plot(h)
-    set(0,'CurrentFigure',h)
 end
