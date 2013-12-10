@@ -18,11 +18,10 @@ function hallway_follow(serPort, local_ip)
     
     FWD_VEL   = 0.2;
     TURN_VEL  = 0.15;
-    CENTER    = resolution(2)/2;
     EPSILON   = 30;
     TOLERANCE = 200;
-    HEIGHT    = resolution(2);
-    WIDTH     = resolution(1)
+    HEIGHT    = resolution(1);
+    WIDTH     = resolution(2);
           
     state = 'find_hallway';
     
@@ -46,7 +45,7 @@ function hallway_follow(serPort, local_ip)
         
         %% Calculations
         
-        center_offset = CENTER - b_line;
+        center_offset = WIDTH/2 - b_line;
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
