@@ -16,42 +16,26 @@ function entropy_follow(step_size)
                  brightness < image (:,:,3);
 
    
-    entropies = [0]
-    xvals = [0]
+    entropies = double.empty()
+    brights = double.empty()
+    xvals = double.empty()
 
-    for(x=1:step_size:w)
-
+    for(x=1:step_size:(w-step_size))
         xvals = [xvals x]
-        entropies = [entropies entropy(pixel_mask(:, x:step_size))]
+        entropies = [entropies entropy(image(:, x:x + step_size))]
+        brights  = [brights mean2(pixel_mask(:, x:x + step_size))]
     end 
 
-    entropies = entropies(find(entropies,1,'first'), :)
-    xvals = xvals(find(xvals, 1, 'first'), :)
 
+    total_ent = entropy(image);
 
+    max_entropy = max(entropies)
+    index = find(entropies==max_entropy)
+    argmax_entropy = xvals(index)
 
-    %avg_bright = mean(pixel_mask);
-    
-    %[m, index]  = max(avg_bright);
-        
-    %x_br_line = [index index];
-    %y_br_line = [0 resolution(1)];   
-    
-    %figure(1);
-    %subplot(1,2,1); imshow(image);             
-    %subplot(1,2,2); imshow(pixel_mask);
-    %hold on; plot(x_br_line,y_br_line);
-    
-
-    %[m, index]  = max(avg_bright); %check that m is certain value, else
-
-
-    %x_br_line = [index index]; 
-    %y_br_line = [0 resolution(1)];  %draw from bottom to top  
-    
-    %figure(2); 
-    %imshow(image);hold on;
-    %plot(x_br_line,y_br_line);
+    plot(xvals, smooth(entropies)); 
+    plot(xvals, smooth(brights)); 
+ 
 
 
 end
