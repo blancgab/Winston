@@ -30,12 +30,8 @@ function hw5(serPort)
     prev_x = center;
     
     while(1)
-<<<<<<< HEAD
 %         image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
         image = imread('http://192.168.1.101/img/snapshot.cgi?');
-=======
-        image = imread('http://192.168.1.102/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
->>>>>>> 66a0d4fd651b6ce497f1c299a8f0c7ef9d6eb7a0
         pixel_mask = create_mask(image, rgb);
         [x, y, area, box] = find_largest_blob(pixel_mask);
         figure(1);
