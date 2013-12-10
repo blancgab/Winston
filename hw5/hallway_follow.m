@@ -5,11 +5,12 @@ function hallway_follow(serPort, local_ip)
     port = serPort;
 
     %% Initialization
-%     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0'];
-%     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
-
-    cam_ip = 'hallway_image.jpg';
     
+%   cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0'];
+%   cam_ip = 'hallway_image.jpg';
+
+    cam_ip = ['http://192.168.1.',local_ip,'/img/snapshot.cgi?'];
+
     image = imread(cam_ip);    
     resolution = size(image); 
 	resolution = resolution(1:2);
@@ -50,11 +51,11 @@ function hallway_follow(serPort, local_ip)
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
-        bump = BumpLeft || BumpFront || BumpRight;
+%         bump = BumpLeft || BumpFront || BumpRight;
         
-        if bump
-            fprintf('BUMP\n');
-        end
+%         if bump
+%             fprintf('BUMP\n');
+%         end
         
         %% Plotting
 
@@ -126,8 +127,4 @@ function hallway_follow(serPort, local_ip)
           
     end
     
-end
-
-function update_plot(h)
-    set(0,'CurrentFigure',h)
 end
