@@ -1,4 +1,4 @@
-function hallway_follow(local_ip, serPort)
+function hallway_follow(serPort, velocity, epsilon)
     
     global port;
     port = serPort;
@@ -44,12 +44,6 @@ function hallway_follow(local_ip, serPort)
         subplot(1,2,2); imshow(pixel_mask);
         hold on; plot(x_br_line,y_br_line);          
 
-        %% Path Finding (SOPHIE'S CODE)
-        
-        %   path
-        %   path
-        %   path
-        %   path
 
         
         %% State
@@ -62,6 +56,11 @@ function hallway_follow(local_ip, serPort)
                             
                 
             case 'hall_follow'
+                offset = (resolution(2) / 2) - index %how far off is the max index from midpoint?
+
+                if(abs(offset) <= epsilon)
+                    turnAngle(serPort, velocity, 10)
+                end
                 
                 % 
                 
