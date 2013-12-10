@@ -74,11 +74,11 @@ function hallway_follow(serPort, local_ip)
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
-%         bump = BumpLeft || BumpFront || BumpRight;
+        bump = BumpLeft || BumpFront || BumpRight;
 
-%         if bump
-%             fprintf('BUMP\n');
-%         end
+        if bump
+            fprintf('BUMP\n');
+        end
         
         %% Plotting
 
@@ -91,24 +91,9 @@ function hallway_follow(serPort, local_ip)
         %% State
                       
         switch state
-            
-            case 'find_hallway'
-                
-                fprintf('searching for hallway\n');  
-                
-                
-                if(max_brightness > TOLERANCE)
-                    fprintf('found hallway\n');  
-                    state = 'hallway_follow';
-                end
                 
             case 'hallway_follow'
                                 
-%                 if (max_brightness < TOLERANCE)
-%                     
-%                     fprintf('cannot find hallway\n'); 
-%                     state = 'find_hallway';
-%                 else
                 if (found_door)
                     
                     fprintf('found door, turning towards it\n');
@@ -123,7 +108,7 @@ function hallway_follow(serPort, local_ip)
                         fprintf('turning clockwise\n');
                     end
                         
-%                     turnAngle(port, FWD_VEL, 10*s)
+                    turnAngle(port, FWD_VEL, 5*s)
                 end
                                 
             case 'door_follow'
