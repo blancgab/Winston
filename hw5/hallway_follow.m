@@ -35,12 +35,6 @@ function hallway_follow(local_ip, serPort, velocity, epsilon)
         subplot(1,2,2); imshow(pixel_mask);
         hold on; plot(x_br_line,y_br_line);          
 
-        %% Path Finding (SOPHIE'S CODE)
-        offset = (resolution(2) / 2) - index %how far off is the max index from midpoint?
-
-        if(abs(offset) <= epsilon)
-            turnAngle(serPort, velocity, 10)
-        end
 
         
         %% State
@@ -51,6 +45,11 @@ function hallway_follow(local_ip, serPort, velocity, epsilon)
                             
                 
             case 'hall_follow'
+                offset = (resolution(2) / 2) - index %how far off is the max index from midpoint?
+
+                if(abs(offset) <= epsilon)
+                    turnAngle(serPort, velocity, 10)
+                end
                 
                 
             case 'lost'
