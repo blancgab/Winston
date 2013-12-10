@@ -19,13 +19,12 @@ function hallway_follow(serPort, local_ip)
     subplot(1,2,1); imshow(image);
     
     FWD_VEL   = 0.2;
-    TURN_VEL  = 0.15;
-    EPSILON   = 30;
-    TOLERANCE = 200;
+    ANGLE_VEL = 0.15;
     STEP = 10;        
 
-    HEIGHT    = resolution(1);
-    WIDTH     = resolution(2);
+    HEIGHT = resolution(1);
+    WIDTH  = resolution(2);
+    CENTER = WIDTH/2;
           
     state = 'hallway_follow';
     SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
@@ -41,13 +40,11 @@ function hallway_follow(serPort, local_ip)
         pixel_mask = brightness < image (:,:,1) & ...
                      brightness < image (:,:,2) & ...
                      brightness < image (:,:,3);
-        
-        STEP = 10;        
-        
+                
         Q = floor(WIDTH/STEP);
         
-        brights   = zeros(1,Q+1);
-        xvals     = zeros(1,Q+1);
+        brights   = zeros(1,Q);
+        xvals     = zeros(1,Q);
                 
         i = 1;
         
@@ -71,7 +68,7 @@ function hallway_follow(serPort, local_ip)
                 
         %% Calculations
         
-        center_offset = WIDTH/2 - b_line;
+        center_offset = CENTER - br;
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
@@ -102,16 +99,20 @@ function hallway_follow(serPort, local_ip)
                     fprintf('found door, turning towards it\n');
                     state = 'door_follow';
                     
-                elseif (abs(center_offset) <= EPSILON)
-                    s = sign(center_offset);
-                        
-                    if (s == 1)
-                        fprintf('turning counter-clockwise\n');
-                    else
-                        fprintf('turning clockwise\n');
+                else
+                   
+                    if (x > .8*CENTER) && (x < 1.2*CENTER)
+                        turn = 0;
+                    elseif (x < .8*CENTER)
+                        fprintf('Turning left\n');
+                        turn = ANGLE_VEL;
+                    elseif (x > 1.2*center)
+                        fprintf('Turning right\n');
+                        turn = -ANGLE_VEL;
                     end
-                        
-                    turnAngle(port, FWD_VEL, 5*s)
+
+                    SetFwdVelAngVelCreate(port, FWD_VEL, turn);                    
+                    
                 end
                                 
             case 'door_follow'
