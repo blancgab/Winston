@@ -1,11 +1,14 @@
-function hallway_follow(serPort, velocity, epsilon)
+
+function hallway_follow(serPort, local_ip)
     
     global port;
     port = serPort;
 
     %% Initialization
-    cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
+%     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
 
+    cam_ip = 'hallway_image.jpg';
+    
     image = imread(cam_ip);    
     resolution = size(image); 
 	resolution = resolution(1:2);
@@ -13,11 +16,13 @@ function hallway_follow(serPort, velocity, epsilon)
     figure(1); drawnow;
     subplot(1,2,1); imshow(image);
     
-    FWD_VEL  = 0.2;
-    TURN_VEL = 0.15;
-    THRESH  = .04;    
+    FWD_VEL   = 0.2;
+    TURN_VEL  = 0.15;
+    CENTER    = resolution(2)/2;
+    EPSILON   = 30;
+    TOLERANCE = 200;
           
-    state = 'start';
+    state = 'find_hallway';
     
     %% Running
     while(1)
@@ -32,47 +37,79 @@ function hallway_follow(serPort, velocity, epsilon)
 
         avg_bright = mean(pixel_mask);
         
-        [m, index]  = max(avg_bright);
+        [max_brightness, b_line]  = max(avg_bright);
 
-        x_br_line = [index index];
-        y_br_line = [0 resolution(1)];   
+        x_br_line = [b_line b_line];
+        y_br_line = [0 resolution(1)];
+        
+        %% Calculations
+        
+        center_offset = CENTER - b_line;
+        fprintf('center offset is: %.2f\n',center_offset);
+        found_door = false;
+        
+        bump = BumpLeft || BumpFront || BumpRight;
+        
+        if bump
+            fprintf('BUMP\n');
+        end
         
         %% Plotting
 
         figure(1);        
         subplot(1,2,1); imshow(image);             
         subplot(1,2,2); imshow(pixel_mask);
-        hold on; plot(x_br_line,y_br_line);          
-
-
+        hold on; plot(x_br_line,y_br_line);
         
         %% State
                       
         switch state
             
-            case 'start'
+            case 'find_hallway'
                 
-                % find the best direction
-                            
+                fprintf('searching for hallway\n');  
                 
-            case 'hall_follow'
-                offset = (resolution(2) / 2) - index %how far off is the max index from midpoint?
-
-                if(abs(offset) <= epsilon)
-                    turnAngle(serPort, velocity, 10)
+                
+                if(max_brightness > TOLERANCE)
+                    fprintf('found lights\n');  
+                    state = 'hallway_follow';
                 end
                 
-                % 
-                
-            case 'lost'
-                
-                turnAngle(port, TURN_VEL, 5);
+            case 'hallway_follow'
+                                
+                if (max_brightness < TOLERANCE)
+                    
+                    fprintf('cannot find lights\n'); 
+                    state = 'find_hallway';
+                elseif (found_door)
+                    
+                    fprintf('found door, turning towards it\n');
+                    state = 'door_follow';
+                    
+                elseif (abs(center_offset) <= EPSILON)
+                        s = sign(center_offset);
+                        
+                        if (s == 1)
+                            fprintf('turning counter-clockwise\n');
+                        else
+                            fprintf('turning clockwise\n');
+                        end
+                        
+%                       turnAngle(port, FWD_VEL, 10*s)
+                end
+                                
                 
             case 'door_follow'
-                
+
+                if bump
+                    state = 'knock';
+                end
                 
             case 'knock'
                 
+                % reverse, wait then go forward
+                
+                state = 'final';
                 
             case 'failure'
                 SetFwdVelAngVelCreate(port, 0, 0 );
