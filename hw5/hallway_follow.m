@@ -26,6 +26,8 @@ function hallway_follow(serPort, local_ip)
     WIDTH  = resolution(2);
     CENTER = WIDTH/2;
           
+    HUE = 240;
+    
     state = 'hallway_follow';
     SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
     
@@ -40,11 +42,25 @@ function hallway_follow(serPort, local_ip)
         pixel_mask = brightness < image (:,:,1) & ...
                      brightness < image (:,:,2) & ...
                      brightness < image (:,:,3);
-                
+
+        S = [MIN_S MAX_S];
+        V = [MIN_V MAX_V];                 
+                 
+        hsv = rgb2hsv(image);
+        hue = round(hsv(:,:,1)*360);
+        
+        sv = (sat >= S(1)) & (sat <= S(2)) & ...
+             (val >= V(1)) & (val <= V(2));        
+        
+        blue = ((hue > HUE-30)&(hue <= HUE+30))&(sv);
+        
+        S = [.1 1];
+        V = [.1 1];
+                 
         Q = floor(WIDTH/STEP);
         
-        brights   = zeros(1,Q);
-        xvals     = zeros(1,Q);
+        brights = zeros(1,Q);
+        xvals   = zeros(1,Q);
                 
         i = 1;
         
@@ -84,7 +100,7 @@ function hallway_follow(serPort, local_ip)
         %% Plotting
 
         subplot(1,2,1); imshow(image);             
-        subplot(1,2,2); imshow(pixel_mask);
+        subplot(1,2,2); imshow(blue); % imshow(pixel_mask);
         hold on; plot(x_br_line,y_br_line);
         drawnow;
         
