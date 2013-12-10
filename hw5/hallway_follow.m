@@ -67,8 +67,7 @@ function hallway_follow(local_ip, serPort)
                 
             case 'lost'
                 
-                turnAngle(port, TURN_VEL, 5);    
-
+                turnAngle(port, TURN_VEL, 5);
                 
             case 'door_follow'
                 
