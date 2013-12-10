@@ -14,48 +14,19 @@ function entropy_follow(step_size)
     pixel_mask = brightness < image (:,:,1) & ...
                  brightness < image (:,:,2) & ...
                  brightness < image (:,:,3);
+             
+    brights   = double.empty;
+    entropies = double.empty;
+    xvals     = double.empty;
 
-   
-    entropies = [0]
-    xvals = [0]
+    for (x=1:step_size:w)
 
-    for(x=1:step_size:w)
+        xvals     = [xvals x]
+        entropies = [entropies entropy(image(:, x:step_size))]
+        brights   = [brights mean(pixel_mask(:, x:step_size))]
 
-        xvals = [xvals x]
-        entropies = [entropies entropy(pixel_mask(:, x:step_size))]
     end 
-
-    entropies = entropies(find(entropies,1,'first'), :)
-    xvals = xvals(find(xvals, 1, 'first'), :)
-
-
-
-    %avg_bright = mean(pixel_mask);
     
-    %[m, index]  = max(avg_bright);
-        
-    %x_br_line = [index index];
-    %y_br_line = [0 resolution(1)];   
     
-    %figure(1);
-    %subplot(1,2,1); imshow(image);             
-    %subplot(1,2,2); imshow(pixel_mask);
-    %hold on; plot(x_br_line,y_br_line);
-    
-
-    %[m, index]  = max(avg_bright); %check that m is certain value, else
-
-
-    %x_br_line = [index index]; 
-    %y_br_line = [0 resolution(1)];  %draw from bottom to top  
-    
-    %figure(2); 
-    %imshow(image);hold on;
-    %plot(x_br_line,y_br_line);
-
 
 end
-
-
-
-%how much to move and in which dir
