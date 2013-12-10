@@ -22,6 +22,8 @@ function hallway_follow(serPort, local_ip)
     TURN_VEL  = 0.15;
     EPSILON   = 30;
     TOLERANCE = 200;
+    STEP = 10;        
+
     HEIGHT    = resolution(1);
     WIDTH     = resolution(2);
           
@@ -32,7 +34,7 @@ function hallway_follow(serPort, local_ip)
         
         image = imread(cam_ip);
        
-        %% Calculate Brightness and Entropy Line
+        %% Calculate Brightness
                 
         brightness = 230;
         pixel_mask = brightness < image (:,:,1) & ...
@@ -44,36 +46,27 @@ function hallway_follow(serPort, local_ip)
         Q = floor(WIDTH/STEP);
         
         brights   = zeros(1,Q+1);
-        entropies = zeros(1,Q+1);
         xvals     = zeros(1,Q+1);
-        
-        grayscale = rgb2gray(image);        
-        
+                
         i = 1;
         
-        for(x=1:STEP:(WIDTH-STEP))
+        for x=1:STEP:(WIDTH-STEP)
+            
             xvals(i)     = x;
-            entropies(i) = entropy(grayscale(:, x:x + STEP));
             brights(i)   = mean2(pixel_mask(:, x:x + STEP));
                         
             i = i+1;
         end      
         
-        xvals     = xvals(1 : find(xvals,1,'last'))
-        entropies = entropies(1 : find(entropies,1,'last'))
-        brights   = brights(1 : find(brights,1,'last'))
+        xvals   = xvals(1 : find(xvals,1,'last'));
+        brights = brights(1 : find(brights,1,'last'));
 
         [max_brightness, b_line] = max(brights);        
-        [max_entropy, e_line]    = max(entropies);        
-
+        
         br = xvals(b_line)+STEP/2;
-        en = xvals(e_line)+STEP/2;
         
         x_br_line = [br br];
         y_br_line = [0 HEIGHT];
-        
-        x_en_line = [en en];
-        y_en_line = [0 HEIGHT];
                 
         %% Calculations
         
