@@ -1,5 +1,9 @@
-function hallway_follow(local_ip)
+function hallway_follow(local_ip, serPort)
+    
+    global port;
+    port = serPort;
 
+    %% Initialization
     cam_ip = ['http://192.168.1.',local_ip,'/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0']
 
     image = imread(cam_ip);    
@@ -9,8 +13,13 @@ function hallway_follow(local_ip)
     figure(1); drawnow;
     subplot(1,2,1); imshow(image);
     
+    FWD_VEL  = 0.2;
+    TURN_VEL = 0.15;
+    THRESH  = .04;    
+          
     state = 'start';
-  
+    
+    %% Running
     while(1)
         
         image = imread(cam_ip);
@@ -48,12 +57,18 @@ function hallway_follow(local_ip)
         switch state
             
             case 'start'
+                
+                % find the best direction
                             
                 
             case 'hall_follow'
                 
+                % 
                 
             case 'lost'
+                
+                turnAngle(port, TURN_VEL, 5);    
+
                 
             case 'door_follow'
                 
