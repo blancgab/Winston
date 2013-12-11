@@ -58,10 +58,10 @@ function door_RGB_local()
     while(1)
         
         image = imread('http://192.168.1.102/img/snapshot.cgi?');
+        
         hsv = rgb2hsv(image);
         hue = hsv(:,:,1);
         sat = hsv(:,:,2);    
-        
         
         sv = (sat >= S(1)) & (sat <= S(2));
         blue = ((hue > H(1))&(hue <= H(2)))&(sv) ;         
