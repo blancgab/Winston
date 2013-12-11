@@ -15,8 +15,8 @@ function hallway_follow(serPort, local_ip)
     resolution = size(image); 
 	resolution = resolution(1:2);
     
-    figure(1); drawnow;
-    subplot(1,2,1); imshow(image);
+    %figure(1); drawnow;
+    %subplot(1,2,1); imshow(image);
     
     FWD_VEL   = 0.2;
     ANGLE_VEL = 0.15;
@@ -38,10 +38,10 @@ function hallway_follow(serPort, local_ip)
         %% HSV Color Detection
 
         % Hue MIN/MAX
-        H = [.55 .7];
+        H = [.6 .7];
     
         % Sat MIN/MAX
-        S = [.07 .34];
+        S = [.10 .35];
         
         hsv = rgb2hsv(image);
         hue = hsv(:,:,1);
@@ -68,7 +68,7 @@ function hallway_follow(serPort, local_ip)
                 
         i = 1;
         
-        for x=1:STEP:(WIDTHSTEP)
+        for x=1:STEP:(WIDTH - STEP)
             
             xvals(i)     = x;
             brights(i)   = mean2(pixel_mask(:, x:x + STEP));
@@ -88,7 +88,7 @@ function hallway_follow(serPort, local_ip)
                 
         %% Calculations
         
-        center_offset = CENTER  br;
+        center_offset = CENTER - br;
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
@@ -103,17 +103,21 @@ function hallway_follow(serPort, local_ip)
         
         %% Plotting
 
-        subplot(1,2,1); imshow(image);             
-        subplot(1,2,2); imshow(blue); % imshow(pixel_mask);
-        hold on; plot(x_br_line,y_br_line);
-        drawnow;
+        %subplot(1,2,1); imshow(image);             
+        %subplot(1,2,2); imshow(blue); % imshow(pixel_mask);
+        %hold on; plot(x_br_line,y_br_line);
+        %drawnow;
         
         %% State
                       
         switch state
                 
             case 'hallway_follow'
-                                
+                fprintf('HALLWAYFOLLOW \n')
+                
+                [xval, A] =  door_find(blue)
+                A
+
                 if (found_door)
                     
                     fprintf('found door, turning towards it\n');
@@ -124,6 +128,7 @@ function hallway_follow(serPort, local_ip)
                     if (br > .8*CENTER) && (br < 1.2*CENTER)
                         turn = 0;
                     elseif (br < .8*CENTER)
+                        fprintf('MEOW MEOW MEOW hallway_follow')
                         fprintf('Turning left\n');
                         turn = ANGLE_VEL;
                     elseif (br > 1.2*CENTER)
@@ -131,32 +136,36 @@ function hallway_follow(serPort, local_ip)
                         turn = ANGLE_VEL;
                     end
 
-                    SetFwdVelAngVelCreate(port, FWD_VEL, turn);                    
+                    SetFwdVelAngVelCreate(port, FWD_VEL, turn);   
+
+                    state='hallway_follow';                
                     
                 end
                                 
             case 'door_follow'
-                [door_offset, door_area] = door_find(blue);
+                [door_x, door_area] = door_find(blue);
 
-                if(door_area < DOOR_THRESHOLD):
+                if((door_area / (WIDTH * HEIGHT)) < DOOR_THRESHOLD)
                     %keep traveling in the right direction
-                    if (door_offset > .8*CENTER) && (door_offset < 1.2*CENTER)
+                    if (door_x > .85*CENTER) && (door_x < 1.15*CENTER)
                         turn = 0;
-                    elseif (door_offset < .8*CENTER)
+                    elseif (door_x < .85*CENTER)
+                        fprintf('MEOW MEOW DOOR FOLLOW')
                         fprintf('Turning left\n');
                         turn = ANGLE_VEL;
-                    elseif (door_offset > 1.2*CENTER)
+                    elseif (door_x > 1.15*CENTER)
                         fprintf('Turning right\n');
                         turn = ANGLE_VEL;
                     end
 
                     SetFwdVelAngVelCreate(port, FWD_VEL, turn);    
                     state = 'door_follow'                
-                    
-                else:
+                
+                else
                     %we've approached the door, go straight
                     state = 'knock' 
-                
+                end
+
             case 'knock'
                 
                 SetFwdVelAngVelCreate(port, FWD_VEL, 0);
@@ -184,7 +193,7 @@ function hallway_follow(serPort, local_ip)
     
 end
 
-function [offset, A] = door_find(blue)
+function [xval, A] = door_find(blue)
    %find door in the blue-binarized mask and get its offset
     [h, w] = size(blue);
     center = w/2;
@@ -195,7 +204,7 @@ function [offset, A] = door_find(blue)
     biggest = find([blobs.Area] == A)
     xval = blobs(biggest).Centroid(1);
 
-    offset = xval - center;
+    %offset = xval - center;
 
     imshow(blue)
     hold on

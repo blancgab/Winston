@@ -30,7 +30,7 @@ function hw5(serPort)
     turn = 0;
     
     while(1)
-%         image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
+%       image = imread('http://192.168.1.100/snapshot.cgi?user=admin&pwd=&resolution=16&rate=0');
         image = imread('http://192.168.1.102/img/snapshot.cgi?');
         pixel_mask = create_mask(image, rgb);
         [x, y, area, box] = find_largest_blob(pixel_mask);
@@ -43,7 +43,6 @@ function hw5(serPort)
             fprintf('Cant find object\n');
             continue;
         end
-         
         
         if (x > .8*center) && (x < 1.2*center)
             turn = 0;
