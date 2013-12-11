@@ -25,6 +25,7 @@ function hallway_follow(serPort, local_ip)
     HEIGHT = resolution(1);
     WIDTH  = resolution(2);
     CENTER = WIDTH/2;
+    DOOR_THRESHOLD = 0.8
               
     state = 'hallway_follow';
     SetFwdVelAngVelCreate(port, FWD_VEL, 0 );
@@ -50,8 +51,9 @@ function hallway_follow(serPort, local_ip)
         sv = (sat >= S(1)) & (sat <= S(2)) & ...
              (val >= .1) & (val <= 1);
              
+        %binarized mask for blue values
         blue = ((hue > H(1))&(hue <= H(2)))&(sv) ;         
-        
+
         %% Calculate Brightness    
         
         brightness = 230;
@@ -66,7 +68,7 @@ function hallway_follow(serPort, local_ip)
                 
         i = 1;
         
-        for x=1:STEP:(WIDTH-STEP)
+        for x=1:STEP:(WIDTHSTEP)
             
             xvals(i)     = x;
             brights(i)   = mean2(pixel_mask(:, x:x + STEP));
@@ -86,7 +88,7 @@ function hallway_follow(serPort, local_ip)
                 
         %% Calculations
         
-        center_offset = CENTER - br;
+        center_offset = CENTER  br;
         fprintf('center offset is: %.2f\n',center_offset);
         found_door = false;
         
@@ -126,7 +128,7 @@ function hallway_follow(serPort, local_ip)
                         turn = ANGLE_VEL;
                     elseif (br > 1.2*CENTER)
                         fprintf('Turning right\n');
-                        turn = -ANGLE_VEL;
+                        turn = ANGLE_VEL;
                     end
 
                     SetFwdVelAngVelCreate(port, FWD_VEL, turn);                    
@@ -134,14 +136,30 @@ function hallway_follow(serPort, local_ip)
                 end
                                 
             case 'door_follow'
+                [door_offset, door_area] = door_find(blue);
 
-                if bump
-                    state = 'knock';
-                end
+                if(door_area < DOOR_THRESHOLD):
+                    %keep traveling in the right direction
+                    if (door_offset > .8*CENTER) && (door_offset < 1.2*CENTER)
+                        turn = 0;
+                    elseif (door_offset < .8*CENTER)
+                        fprintf('Turning left\n');
+                        turn = ANGLE_VEL;
+                    elseif (door_offset > 1.2*CENTER)
+                        fprintf('Turning right\n');
+                        turn = ANGLE_VEL;
+                    end
+
+                    SetFwdVelAngVelCreate(port, FWD_VEL, turn);    
+                    state = 'door_follow'                
+                    
+                else:
+                    %we've approached the door, go straight
+                    state = 'knock' 
                 
             case 'knock'
                 
-                SetFwdVelAngVelCreate(port, -FWD_VEL, 0);
+                SetFwdVelAngVelCreate(port, FWD_VEL, 0);
                 
                 pause(1);
                 
@@ -165,3 +183,23 @@ function hallway_follow(serPort, local_ip)
     end
     
 end
+
+function [offset, A] = door_find(blue)
+   %find door in the blue-binarized mask and get its offset
+    [h, w] = size(blue);
+    center = w/2;
+
+    blobs = regionprops(blue, 'Area', 'Extrema', 'Centroid');
+    %simply with largest Area 
+    A = max([blobs.Area])
+    biggest = find([blobs.Area] == A)
+    xval = blobs(biggest).Centroid(1);
+
+    offset = xval - center;
+
+    imshow(blue)
+    hold on
+    plot([xval xval], [0 h])
+
+end
+
